@@ -11,38 +11,30 @@
             background: radial-gradient(circle, #1a1c29 0%, #08090d 100%);
             color: #fff; min-height: 100vh;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            overflow: hidden;
         }
 
         /* หน้ากดเข้าเกม */
         #startScreen {
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            text-align: center; width: 100%; height: 100vh;
+            text-align: center; width: 100%; padding: 20px;
         }
         .game-title {
-            font-size: 2.5rem; margin-bottom: 10px; color: #ff007f;
+            font-size: 2.2rem; margin-bottom: 10px; color: #ff007f;
             text-shadow: 0 0 15px #ff007f, 0 0 30px #ff007f;
-            letter-spacing: 2px;
         }
         .subtitle { font-size: 1rem; color: #aaa; margin-bottom: 40px; }
         .btn-start {
-            padding: 16px 45px; font-size: 1.4rem; font-weight: bold; color: #fff;
+            padding: 16px 45px; font-size: 1.3rem; font-weight: bold; color: #fff;
             background: linear-gradient(45deg, #00d2ff, #0072ff);
             border: none; border-radius: 50px; cursor: pointer;
             box-shadow: 0 0 20px rgba(0, 210, 255, 0.5);
-            animation: pulse 1.5s infinite alternate;
-        }
-        @keyframes pulse {
-            0% { transform: scale(1); box-shadow: 0 0 15px rgba(0,210,255,0.4); }
-            100% { transform: scale(1.08); box-shadow: 0 0 30px rgba(0,210,255,0.8); }
         }
 
-        /* หน้าเล่นเกมสุ่มการ์ด (ซ่อนไว้ก่อน) */
-        #gameScreen { display: none; flex-direction: column; align-items: center; justify-content: center; }
+        /* หน้าสุ่มการ์ด */
+        #gameScreen { display: none; text-align: center; }
         
-        .card-container { perspective: 1000px; margin: 25px 0; }
+        .card-container { perspective: 1000px; margin: 25px auto; width: 220px; height: 320px; }
         .card {
-            width: 220px; height: 320px; border-radius: 16px;
+            width: 100%; height: 100%; border-radius: 16px;
             position: relative; transform-style: preserve-3d;
             transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
             cursor: pointer; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
@@ -73,9 +65,8 @@
             padding: 14px 36px; font-size: 1.2rem; font-weight: bold; color: #fff;
             background: linear-gradient(45deg, #ff007f, #7928ca);
             border: none; border-radius: 50px; cursor: pointer;
-            box-shadow: 0 0 15px rgba(255, 0, 127, 0.4);
+            box-shadow: 0 0 15px rgba(255, 0, 127, 0.4); margin-top: 10px;
         }
-        .btn-draw:active { transform: scale(0.95); }
     </style>
 </head>
 <body>
@@ -84,12 +75,12 @@
     <div id="startScreen">
         <h1 class="game-title">GACHA WORLD</h1>
         <p class="subtitle">ตำนานการ์ดเวทมนตร์</p>
-        <button class="btn-start" onclick="startGame()">▶ กดเพื่อเข้าสู่เกม</button>
+        <button type="button" class="btn-start" onclick="startGame()">▶ กดเพื่อเข้าสู่เกม</button>
     </div>
 
     <!-- หน้าสุ่มการ์ด -->
     <div id="gameScreen">
-        <h1 style="font-size: 1.5rem; color: #ff007f; text-shadow: 0 0 10px #ff007f;">✨ สุ่มการ์ด ✨</h1>
+        <h1 style="font-size: 1.5rem; color: #ff007f;">✨ สุ่มการ์ด ✨</h1>
 
         <div class="card-container" onclick="drawCard()">
             <div class="card" id="card">
@@ -101,7 +92,7 @@
             </div>
         </div>
 
-        <button class="btn-draw" onclick="drawCard()">สุ่มการ์ด!</button>
+        <button type="button" class="btn-draw" onclick="drawCard()">สุ่มการ์ด!</button>
     </div>
 
     <script>
@@ -115,13 +106,15 @@
 
         let isAnimating = false;
 
-        // ฟังก์ชันสลับหน้ากดเข้าเกม
         function startGame() {
-            document.getElementById('startScreen').style.display = 'none';
-            document.getElementById('gameScreen').style.display = 'flex';
-        
+            var startBox = document.getElementById('startScreen');
+            var gameBox = document.getElementById('gameScreen');
+            if (startBox && gameBox) {
+                startBox.style.display = 'none';
+                gameBox.style.display = 'block';
+            }
+        }
 
-        // ฟังก์ชันสุ่มการ์ด
         function drawCard() {
             if (isAnimating) return;
             isAnimating = true;
