@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เกมสุ่มการ์ด</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; background-color: #121212; color: white; padding-top: 50px; }
+        .card { width: 150px; height: 220px; background: #222; border: 3px solid #ff4757; border-radius: 12px; margin: 20px auto; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: bold; }
+        button { padding: 12px 24px; font-size: 18px; border: none; background: #ff4757; color: white; border-radius: 8px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>สุ่มการ์ดเสี่ยงโชค</h1>
+    <div class="card" id="cardBox">?</div>
+    <button onclick="drawCard()">สุ่มการ์ด!</button>
+
+    <script>
+        const cards = ["UR - มังกรทอง", "SSR - นักรบไฟ", "SR - นักเวท", "R - สไลม์", "Common - ก้อนหิน"];
+        function drawCard() {
+            const randomIndex = Math.floor(Math.random() * cards.length);
+            document.getElementById("cardBox").innerText = cards[randomIndex];
+        }
+    </script>
+</body>
+</html>
+
