@@ -3,156 +3,459 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JOJO x Demon Slayer Gacha</title>
+    <title>JOJO x Demon Slayer Gacha & Boss Battle</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: sans-serif; background: #111; color: #fff; display: flex; flex-direction: column; align-items: center; padding: 20px 10px; min-height: 100vh; }
-        #startScreen { text-align: center; margin-top: 20vh; }
-        .title { font-size: 2rem; color: #ff007f; margin-bottom: 20px; font-weight: bold; }
-        .btn { padding: 12px 24px; font-size: 1rem; font-weight: bold; color: #fff; background: #0072ff; border: none; border-radius: 25px; cursor: pointer; margin: 5px; }
-        .btn-draw { background: #ff007f; }
-        .btn-attack { background: #ff4757; width: 100%; margin-top: 10px; }
-        .btn-claim { background: #00b894; padding: 4px 10px; font-size: 0.8rem; }
-        .btn-claim:disabled { background: #555; }
-        #gameScreen { display: none; width: 100%; max-width: 450px; text-align: center; }
-        .status-bar { display: flex; justify-content: space-around; background: #222; padding: 10px; border-radius: 10px; margin-bottom: 15px; font-size: 0.85rem; }
-        .boss-box { background: #2a0813; border: 2px solid #ff0055; border-radius: 12px; padding: 15px; margin-bottom: 15px; }
-        .hp-bar { width: 100%; height: 16px; background: #444; border-radius: 8px; overflow: hidden; margin: 8px 0; }
-        .hp-fill { height: 100%; width: 100%; background: #ff0055; transition: width 0.3s; }
-        .quest-box { background: #222; border-radius: 10px; padding: 10px; margin-bottom: 15px; text-align: left; font-size: 0.85rem; }
-        .quest-item { display: flex; justify-content: space-between; align-items: center; margin: 5px 0; }
-        .card-display { width: 180px; height: 250px; background: #222; border: 3px solid #ff007f; border-radius: 12px; margin: 15px auto; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 10px; }
-        .rarity-tag { font-size: 1.2rem; font-weight: bold; margin-bottom: 10px; }
-        .card-name { font-size: 1.1rem; font-weight: bold; margin-bottom: 5px; }
-        .ur { border-color: #ff0033; color: #ff0033; }
-        .ssr { border-color: #ffd700; color: #ffd700; }
-        .sr { border-color: #a855f7; color: #a855f7; }
-        .r { border-color: #3b82f6; color: #3b82f6; }
-        .c { border-color: #aaa; color: #aaa; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: radial-gradient(circle, #1a1c29 0%, #08090d 100%);
+            color: #fff; min-height: 100vh;
+            display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+            padding: 20px 10px;
+        }
+
+        #startScreen { text-align: center; width: 100%; margin-top: 25vh; }
+        .game-title {
+            font-size: 2rem; margin-bottom: 10px; color: #ff007f;
+            text-shadow: 0 0 15px #ff007f, 0 0 30px #ff007f;
+        }
+        .subtitle { font-size: 1rem; color: #aaa; margin-bottom: 40px; }
+        .btn-start {
+            padding: 16px 45px; font-size: 1.3rem; font-weight: bold; color: #fff;
+            background: linear-gradient(45deg, #00d2ff, #0072ff);
+            border: none; border-radius: 50px; cursor: pointer;
+            box-shadow: 0 0 20px rgba(0, 210, 255, 0.5);
+        }
+
+        #gameScreen { display: none; text-align: center; width: 100%; max-width: 500px; }
+        
+        .status-bar {
+            display: flex; justify-content: space-around; flex-wrap: wrap; gap: 5px;
+            margin-bottom: 10px;
+        }
+        .gem-box {
+            font-size: 0.9rem; color: #00ffff; font-weight: bold;
+            background: rgba(0, 255, 255, 0.1); padding: 5px 12px; border-radius: 20px;
+            border: 1px solid rgba(0, 255, 255, 0.4); text-shadow: 0 0 5px #00ffff;
+        }
+        .counter-box {
+            font-size: 0.85rem; color: #ff007f;
+            background: rgba(255,255,255,0.05); padding: 5px 12px; border-radius: 20px;
+        }
+        .pity-box {
+            font-size: 0.85rem; color: #ffd700;
+            background: rgba(255, 215, 0, 0.1); padding: 5px 12px; border-radius: 20px;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+        }
+
+        /* โซนบอส */
+        .boss-container {
+            background: rgba(255, 0, 85, 0.1);
+            border: 2px solid #ff0055;
+            border-radius: 16px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 0 15px rgba(255, 0, 85, 0.3);
+        }
+        .boss-name { font-size: 1.3rem; font-weight: bold; color: #ff4757; text-shadow: 0 0 10px #ff4757; }
+        .hp-bar-bg {
+            width: 100%; height: 20px; background: #222; border-radius: 10px;
+            margin: 10px 0; overflow: hidden; border: 1px solid #444;
+        }
+        .hp-bar-fill {
+            height: 100%; width: 100%; background: linear-gradient(90deg, #ff0055, #ff4757);
+            transition: width 0.3s ease;
+        }
+        .battle-log { font-size: 0.85rem; color: #ffcc00; height: 22px; font-weight: bold; margin-top: 5px; }
+
+        /* โซนเควสต์ */
+        .quest-container {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            padding: 10px 15px;
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        .quest-title { font-size: 0.95rem; color: #00d2ff; font-weight: bold; margin-bottom: 8px; text-align: center; }
+        .quest-item {
+            display: flex; justify-content: space-between; align-items: center;
+            font-size: 0.8rem; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .quest-item:last-child { border-bottom: none; }
+        .btn-claim {
+            padding: 4px 10px; font-size: 0.75rem; font-weight: bold; color: #fff;
+            background: #00b894; border: none; border-radius: 12px; cursor: pointer;
+        }
+        .btn-claim:disabled { background: #555; cursor: not-allowed; }
+
+        .card-container { perspective: 1000px; margin: 15px auto; width: 200px; height: 280px; }
+        .card {
+            width: 100%; height: 100%; border-radius: 16px;
+            position: relative; transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .card.flipped { transform: rotateY(180deg); }
+        .card-face {
+            position: absolute; width: 100%; height: 100%;
+            backface-visibility: hidden; border-radius: 16px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            border: 3px solid rgba(255,255,255,0.2); padding: 15px;
+        }
+        
+        .card-back { background: linear-gradient(135deg, #2c3e50, #000000); border-color: #00d2ff; }
+        .card-back::after { content: "❖"; font-size: 50px; color: #00d2ff; text-shadow: 0 0 15px #00d2ff; }
+
+        .card-front { transform: rotateY(180deg); background: #151515; text-align: center; }
+        .rarity { font-size: 0.9rem; font-weight: bold; margin-bottom: 5px; text-transform: uppercase; }
+        .card-title { font-size: 1.1rem; font-weight: bold; margin-bottom: 5px; }
+        .anime-tag { font-size: 0.75rem; opacity: 0.8; }
+
+        /* สีการ์ด */
+        .ur { border-color: #ff0033; box-shadow: 0 0 25px #ff0033; color: #ff0033; }
+        .ssr { border-color: #ffd700; box-shadow: 0 0 20px #ffd700; color: #ffd700; }
+        .sr { border-color: #a855f7; box-shadow: 0 0 15px #a855f7; color: #a855f7; }
+        .r { border-color: #3b82f6; box-shadow: 0 0 10px #3b82f6; color: #3b82f6; }
+        .c { border-color: #9ca3af; color: #9ca3af; }
+
+        .btn-action {
+            padding: 12px 28px; font-size: 1.1rem; font-weight: bold; color: #fff;
+            border: none; border-radius: 50px; cursor: pointer; margin: 5px;
+        }
+        .btn-draw {
+            background: linear-gradient(45deg, #ff007f, #7928ca);
+            box-shadow: 0 0 15px rgba(255, 0, 127, 0.4);
+        }
+        .btn-attack {
+            background: linear-gradient(45deg, #ff4757, #ff6b81);
+            box-shadow: 0 0 15px rgba(255, 71, 87, 0.5);
+            width: 90%; margin-top: 10px;
+        }
+
+        .btn-toggle-album {
+            padding: 8px 16px; font-size: 0.85rem; font-weight: bold; color: #00d2ff;
+            background: rgba(0, 210, 255, 0.1); border: 1px solid #00d2ff;
+            border-radius: 20px; cursor: pointer; margin-top: 10px;
+        }
+
+        #albumSection {
+            margin-top: 15px; width: 100%;
+            background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px; padding: 15px;
+        }
+        .album-grid {
+            display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 10px;
+        }
+        .album-item {
+            background: #111; border: 2px solid #333; border-radius: 10px;
+            padding: 8px; font-size: 0.8rem; position: relative;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            min-height: 80px; opacity: 0.4; cursor: pointer;
+        }
+        .album-item.unlocked { opacity: 1; }
+        .album-item.selected { border-color: #00d2ff; box-shadow: 0 0 10px #00d2ff; }
+        .album-item .count-badge {
+            position: absolute; top: 5px; right: 8px; font-size: 0.7rem;
+            background: #ff007f; color: white; padding: 2px 5px; border-radius: 10px; font-weight: bold;
+        }
     </style>
 </head>
 <body>
+
     <div id="startScreen">
-        <div class="title">JOJO x DEMON SLAYER</div>
-        <button type="button" class="btn" onclick="startGame()">▶ เข้าสู่เกม</button>
+        <h1 class="game-title">JOJO x DEMON SLAYER</h1>
+        <p class="subtitle">สุ่มการ์ด & พิชิตบอสสุดแกร่ง</p>
+        <button type="button" class="btn-start" onclick="startGame()">▶ กดเพื่อเข้าสู่เกม</button>
     </div>
+
     <div id="gameScreen">
         <div class="status-bar">
-            <div>💎 <span id="gemCount">10</span></div>
-            <div>สุ่ม: <span id="drawCount">0</span></div>
-            <div>การันตี: <span id="pityCount">0</span>/25</div>
+            <div class="gem-box">💎 อัญมณี: <span id="gemCount">10</span></div>
+            <div class="counter-box">สุ่มไปแล้ว: <span id="drawCount">0</span> ครั้ง</div>
+            <div class="pity-box">การันตี SSR: <span id="pityCount">0</span>/25</div>
         </div>
-        <div class="boss-box">
-            <h3 id="bossName" style="color: #ff4757;">⚡ Dio Over Heaven</h3>
-            <div class="hp-bar"><div class="hp-fill" id="hpBar"></div></div>
-            <div id="hpText" style="font-size:0.8rem;">HP: 500,000 / 500,000</div>
-            <div id="battleLog" style="font-size:0.8rem; color:#ffd700; margin-top:5px;">เตรียมตัวสู้!</div>
-            <button type="button" class="btn btn-attack" onclick="attackBoss()">⚔️ โจมตีบอส!</button>
+
+        <!-- โซนบอส -->
+        <div class="boss-container">
+            <div class="boss-name" id="bossName">⚡ Dio Over Heaven</div>
+            <div class="hp-bar-bg">
+                <div class="hp-bar-fill" id="hpBar"></div>
+            </div>
+            <div style="font-size:0.85rem;" id="hpText">HP: 500,000 / 500,000</div>
+            <div class="battle-log" id="battleLog">เตรียมตัวเข้าสู่การต่อสู้!</div>
+            <button type="button" class="btn-action btn-attack" onclick="attackBoss()">⚔️ โจมตีบอส!</button>
         </div>
-        <div class="quest-box">
-            <div style="font-weight:bold; color:#00d2ff; margin-bottom:5px;">📜 เควสต์อัญมณี</div>
+
+        <!-- โซนเควสต์ -->
+        <div class="quest-container">
+            <div class="quest-title">📜 เควสต์รับอัญมณีฟรี</div>
             <div class="quest-item">
-                <span>🎁 รับพลังเวทฟรี</span>
-                <button type="button" class="btn btn-claim" id="btnDaily" onclick="claimDaily()">รับ 3 💎</button>
+                <span>🎁 พลังเวทสนับสนุน (รับฟรี)</span>
+                <button type="button" class="btn-claim" id="btnDailyQuest" onclick="claimDailyGems()">รับ 3 💎</button>
             </div>
             <div class="quest-item">
-                <span>🎲 สุ่มครบ 10 ครั้ง (<span id="questDraw">0</span>/10)</span>
-                <button type="button" class="btn btn-claim" id="btnQuest" onclick="claimQuest()" disabled>รับ 5 💎</button>
+                <span>🎲 สุ่มการ์ดครบ 10 ครั้ง (<span id="questDrawCount">0</span>/10)</span>
+                <button type="button" class="btn-claim" id="btnDrawQuest" onclick="claimDrawQuest()" disabled>รับ 5 💎</button>
             </div>
         </div>
-        <div class="card-display c" id="cardDisplay">
-            <div class="rarity-tag" id="cardRarity">COMMON</div>
-            <div class="card-name" id="cardName">อสูรวัด</div>
-            <div style="font-size:0.75rem; opacity:0.8;" id="cardAnime">Demon Slayer</div>
+
+        <div class="card-container" onclick="drawCard()">
+            <div class="card" id="card">
+                <div class="card-face card-back"></div>
+                <div class="card-face card-front" id="cardFront">
+                    <div class="rarity" id="cardRarity">UR</div>
+                    <div class="card-title" id="cardName">ดีโอ (DIO)</div>
+                    <div class="anime-tag" id="cardAnime">JoJo Part 3</div>
+                </div>
+            </div>
         </div>
-        <button type="button" class="btn btn-draw" onclick="drawCard()">🎲 สุ่มการ์ด (ใช้ 1 💎)</button>
+
+        <button type="button" class="btn-action btn-draw" onclick="drawCard()">🎲 สุ่มการ์ด (ใช้ 1 💎)</button>
+        <br>
+        <button type="button" class="btn-toggle-album" onclick="toggleAlbum()">📦 คอลเลกชันการ์ด (<span id="unlockedCount">0</span>/12)</button>
+
+        <div id="albumSection">
+            <h3 style="font-size: 1rem; color: #00d2ff;">คอลเลกชัน (คลิกการ์ดที่ปลดล็อกเพื่อใช้สู้)</h3>
+            <div class="album-grid" id="albumGrid"></div>
+        </div>
     </div>
+
     <script>
-        var gems = 10;
-        var totalDraws = 0;
-        var pityCounter = 0;
-        var questDrawCount = 0;
         var bosses = [
             { name: "⚡ Dio Over Heaven", maxHp: 500000, hp: 500000 },
             { name: "🩸 มุซัน ร่างปีศาจ", maxHp: 300000, hp: 300000 }
         ];
-        var currentBoss = 0;
-        var pool = [
-            { name: "ดีโอ แบรนโด", anime: "JoJo Part 3", rarity: "UR", class: "ur", atk: 25000 },
-            { name: "คิบุตสึจิ มุซัน", anime: "Demon Slayer", rarity: "UR", class: "ur", atk: 22000 },
-            { name: "คูโจ โจทาโร่", anime: "JoJo Part 3", rarity: "SSR", class: "ssr", atk: 8000 },
-            { name: "คามาโดะ ทันจิโร่", anime: "Demon Slayer", rarity: "SSR", class: "ssr", atk: 7000 },
-            { name: "อากาสึมะ เซ็นอิทซึ", anime: "Demon Slayer", rarity: "SR", class: "sr", atk: 2500 },
-            { name: "อสูรวัด", anime: "Demon Slayer", rarity: "C", class: "c", atk: 200 }
-        ];
-        var activeCard = pool[5];
+        var currentBossIndex = 0;
+
+        var pool = {
+            ur: [
+                { id: 1, name: "ดีโอ แบรนโด (DIO)", anime: "JoJo Part 3", class: "ur", atk: 25000 },
+                { id: 2, name: "คิบุตสึจิ มุซัน", anime: "Demon Slayer", class: "ur", atk: 22000 }
+            ],
+            ssr: [
+                { id: 3, name: "คูโจ โจทาโร่", anime: "JoJo Part 3", class: "ssr", atk: 8000 },
+                { id: 4, name: "คามาโดะ ทันจิโร่", anime: "Demon Slayer", class: "ssr", atk: 7000 },
+                { id: 5, name: "เร็นโกคุ เคียวจูโร่", anime: "Demon Slayer", class: "ssr", atk: 7500 },
+                { id: 6, name: "โจรูโน่ โจบาน่า", anime: "JoJo Part 5", class: "ssr", atk: 8500 }
+            ],
+            sr: [
+                { id: 7, name: "อากาสึมะ เซ็นอิทซึ", anime: "Demon Slayer", class: "sr", atk: 2500 },
+                { id: 8, name: "ฮาชิบิระ อิโนะสึเกะ", anime: "Demon Slayer", class: "sr", atk: 2200 },
+                { id: 9, name: "คิชิเบะ โรฮัง", anime: "JoJo Part 4", class: "sr", atk: 2000 }
+            ],
+            r: [
+                { id: 10, name: "คามาโดะ เนซึโกะ", anime: "Demon Slayer", class: "r", atk: 800 },
+                { id: 11, name: "สปีดวากอน", anime: "JoJo Part 1", class: "r", atk: 600 }
+            ],
+            c: [
+                { id: 12, name: "อสูรวัด (Temple Demon)", anime: "Demon Slayer", class: "c", atk: 200 }
+            ]
+        };
+
+        var allCards = [].concat(pool.ur, pool.ssr, pool.sr, pool.r, pool.c);
+        var userInventory = {};
+        var activeCard = null;
+
+        var isAnimating = false;
+        var totalDraws = 0;
+        var pityCounter = 0;
+        var gems = 10;
+        var drawQuestProgress = 0;
+
         function startGame() {
             document.getElementById('startScreen').style.display = 'none';
             document.getElementById('gameScreen').style.display = 'block';
-            updateUI();
+            initAlbum();
+            updateBossUI();
+            updateGemsUI();
         }
-        function updateUI() {
+
+        function updateGemsUI() {
             document.getElementById('gemCount').innerText = gems;
-            document.getElementById('drawCount').innerText = totalDraws;
-            document.getElementById('pityCount').innerText = pityCounter;
-            document.getElementById('questDraw').innerText = Math.min(questDrawCount, 10);
-            var b = bosses[currentBoss];
-            document.getElementById('bossName').innerText = b.name;
-            document.getElementById('hpText').innerText = 'HP: ' + b.hp.toLocaleString() + ' / ' + b.maxHp.toLocaleString();
-            var pct = (b.hp / b.maxHp) * 100;
-            document.getElementById('hpBar').style.width = pct + '%';
         }
-        function drawCard() {
-            if (gems < 1) { alert('💎 อัญมณีไม่พอ! โปรดรับฟรีจากเควสต์'); return; }
-            gems--; totalDraws++; pityCounter++; questDrawCount++;
-            if (questDrawCount >= 10) { document.getElementById('btnQuest').disabled = false; }
-            var selectedCard;
+
+        function initAlbum() {
+            var grid = document.getElementById('albumGrid');
+            if (!grid) return;
+            grid.innerHTML = '';
+            
+            allCards.forEach(function(card) {
+                userInventory[card.id] = userInventory[card.id] || 0;
+
+                var item = document.createElement('div');
+                item.className = 'album-item ' + card.class;
+                item.id = 'album-item-' + card.id;
+                item.onclick = function() { selectCardToBattle(card); };
+                item.innerHTML = 
+                    '<span class="count-badge" id="count-' + card.id + '" style="display:none;">x0</span>' +
+                    '<div style="font-weight:bold; font-size:0.75rem;" id="rarity-' + card.id + '">🔒 ล็อกอยู่</div>' +
+                    '<div style="margin-top:4px;" id="name-' + card.id + '">???</div>' +
+                    '<div style="font-size:0.65rem; color:#aaa;" id="atk-' + card.id + '">ATK: ' + card.atk + '</div>';
+                grid.appendChild(item);
+            });
+        }
+
+        function selectCardToBattle(card) {
+            if (userInventory[card.id] > 0) {
+                activeCard = card;
+                var items = document.querySelectorAll('.album-item');
+                for (var i = 0; i < items.length; i++) {
+                    items[i].classList.remove('selected');
+                }
+                document.getElementById('album-item-' + card.id).classList.add('selected');
+                document.getElementById('battleLog').innerText = 'เลือก ' + card.name + ' เข้าสู่การต่อสู้! (ATK: ' + card.atk.toLocaleString() + ')';
+            }
+        }
+
+        function attackBoss() {
+            if (!activeCard) {
+                document.getElementById('battleLog').innerText = '❌ โปรดสุ่มการ์ดหรือเลือกการ์ดในคอลเลกชันก่อน!';
+                return;
+            }
+
+            var boss = bosses[currentBossIndex];
+            if (boss.hp <= 0) return;
+
+            var isCrit = Math.random() < 0.2;
+            var damage = isCrit ? activeCard.atk * 2 : activeCard.atk;
+
+            boss.hp = Math.max(0, boss.hp - damage);
+            updateBossUI();
+
+            if (isCrit) {
+                document.getElementById('battleLog').innerText = '💥 ติดคริติคอล! ' + activeCard.name + ' โจมตีใส่ ' + damage.toLocaleString() + ' ดาเมจ!';
+            } else {
+                document.getElementById('battleLog').innerText = '⚔️ ' + activeCard.name + ' โจมตีใส่บอส ' + damage.toLocaleString() + ' ดาเมจ!';
+            }
+
+            if (boss.hp <= 0) {
+                gems += 5;
+                updateGemsUI();
+                document.getElementById('battleLog').innerText = '🎉 พิชิต ' + boss.name + ' สำเร็จ! รับ +5 💎 อัญมณี!';
+                setTimeout(nextBoss, 1500);
+            }
+        }
+
+        function nextBoss() {
+            currentBossIndex = (currentBossIndex + 1) % bosses.length;
+            bosses[currentBossIndex].hp = bosses[currentBossIndex].maxHp;
+            updateBossUI();
+            document.getElementById('battleLog').innerText = '⚠️ บอสตัวใหม่ปรากฏตัว: ' + bosses[currentBossIndex].name + '!';
+        }
+
+        function updateBossUI() {
+            var boss = bosses[currentBossIndex];
+            document.getElementById('bossName').innerText = boss.name;
+            document.getElementById('hpText').innerText = 'HP: ' + boss.hp.toLocaleString() + ' / ' + boss.maxHp.toLocaleString();
+            
+            var percent = (boss.hp / boss.maxHp) * 100;
+            document.getElementById('hpBar').style.width = percent + '%';
+        }
+
+        function claimDailyGems() {
+            gems += 3;
+            updateGemsUI();
+            var btn = document.getElementById('btnDailyQuest');
+            btn.disabled = true;
+            btn.innerText = 'รับแล้ว';
+        }
+
+        function claimDrawQuest() {
+            if (drawQuestProgress >= 10) {
+                gems += 5;
+                drawQuestProgress -= 10;
+                updateGemsUI();
+                document.getElementById('questDrawCount').innerText = drawQuestProgress;
+                
+                var btn = document.getElementById('btnDrawQuest');
+                if (drawQuestProgress < 10) {
+                    btn.disabled = true;
+                }
+            }
+        }
+
+        function toggleAlbum() {
+            var album = document.getElementById('albumSection');
+            if (album) {
+                album.style.display = (album.style.display === 'none') ? 'block' : 'none';
+            }
+        }
+
+        function getRandomCard() {
+            pityCounter++;
+            
             if (pityCounter >= 25) {
                 pityCounter = 0;
-                selectedCard = pool[2];
+                document.getElementById('pityCount').innerText = pityCounter;
+                var randomItem = pool.ssr[Math.floor(Math.random() * pool.ssr.length)];
+                return Object.assign({}, randomItem, { rarity: "SSR (การันตี!)" });
+            }
+
+            var chance = Math.random() * 100;
+            var selectedRarity = "Common";
+            var selectedList = pool.c;
+
+            if (chance < 0.1) {
+                selectedRarity = "UR";
+                selectedList = pool.ur;
+                pityCounter = 0;
+            } else if (chance < 4.8) {
+                selectedRarity = "SSR";
+                selectedList = pool.ssr;
+                pityCounter = 0;
+            } else if (chance < 29.8) {
+                selectedRarity = "SR";
+                selectedList = pool.sr;
+            } else if (chance < 65.0) {
+                selectedRarity = "R";
+                selectedList = pool.r;
             } else {
-                var rand = Math.floor(Math.random() * pool.length);
-                selectedCard = pool[rand];
-                if (selectedCard.rarity === 'SSR' || selectedCard.rarity === 'UR') { pityCounter = 0; }
+                selectedRarity = "Common";
+                selectedList = pool.c;
             }
-            activeCard = selectedCard;
-            var el = document.getElementById('cardDisplay');
-            el.className = 'card-display ' + selectedCard.class;
-            document.getElementById('cardRarity').innerText = selectedCard.rarity;
-            document.getElementById('cardName').innerText = selectedCard.name;
-            document.getElementById('cardAnime').innerText = selectedCard.anime;
-            updateUI();
+
+            document.getElementById('pityCount').innerText = pityCounter;
+
+            var randomCard = selectedList[Math.floor(Math.random() * selectedList.length)];
+            return Object.assign({}, randomCard, { rarity: selectedRarity });
         }
-        function attackBoss() {
-            var b = bosses[currentBoss];
-            if (b.hp <= 0) return;
-            b.hp = Math.max(0, b.hp - activeCard.atk);
-            document.getElementById('battleLog').innerText = '⚔️ ' + activeCard.name + ' โจมตีใส่บอส ' + activeCard.atk.toLocaleString() + ' ดาเมจ!';
-            if (b.hp <= 0) {
-                gems += 5;
-                document.getElementById('battleLog').innerText = '🎉 พิชิต ' + b.name + ' สำเร็จ! รับ +5 💎';
-                setTimeout(function() {
-                    currentBoss = (currentBoss + 1) % bosses.length;
-                    bosses[currentBoss].hp = bosses[currentBoss].maxHp;
-                    updateUI();
-                }, 1500);
+
+        function drawCard() {
+            if (isAnimating) return;
+
+            if (gems < 1) {
+                alert('💎 อัญมณีไม่พอ! โปรดทำเควสต์เพื่อรับอัญมณีเพิ่ม');
+                return;
             }
-            updateUI();
-        }
-        function claimDaily() {
-            gems += 3;
-            document.getElementById('btnDaily').disabled = true;
-            document.getElementById('btnDaily').innerText = 'รับแล้ว';
-            updateUI();
-        }
-        function claimQuest() {
-            if (questDrawCount >= 10) {
-                gems += 5;
-                questDrawCount -= 10;
-                if (questDrawCount < 10) { document.getElementById('btnQuest').disabled = true; }
-                updateUI();
+
+            gems--;
+            updateGemsUI();
+
+            isAnimating = true;
+
+            totalDraws++;
+            document.getElementById('drawCount').innerText = totalDraws;
+
+            drawQuestProgress++;
+            document.getElementById('questDrawCount').innerText = Math.min(drawQuestProgress, 10);
+            if (drawQuestProgress >= 10) {
+                document.getElementById('btnDrawQuest').disabled = false;
             }
-        }
-    </script>
-</body>
-</html>
+
+            var card = document.getElementById('card');
+            var cardFront = document.getElementById('cardFront');
+            
+            card.classList.remove('flipped');
+
+            setTimeout(function() {
+                var random = getRandomCard();
+                activeCard = random;
+                
+                cardFront.className = "card-face card-front " + random.class;
+                document.getElementById('cardRarity').innerText = random.rarity;
+                document.getElementById('cardName').innerText = random.name;
+                document.getElementById('cardAnime').innerText = random.anime;
+
+                userInventory[random.id] = (userInventory[random.id] || 0) + 1;
+                updateAlbum(
