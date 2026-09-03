@@ -56,8 +56,9 @@
         .card-title { font-size: 1.3rem; font-weight: bold; margin-bottom: 5px; }
         .anime-tag { font-size: 0.8rem; opacity: 0.8; }
 
-        .ur { border-color: #ffd700; box-shadow: 0 0 25px #ffd700; color: #ffd700; }
-        .ssr { border-color: #ff007f; box-shadow: 0 0 20px #ff007f; color: #ff007f; }
+        /* ปรับสีความแรร์: UR สีแดงเลือด / SSR สีเหลืองทอง */
+        .ur { border-color: #ff0033; box-shadow: 0 0 25px #ff0033; color: #ff0033; }
+        .ssr { border-color: #ffd700; box-shadow: 0 0 20px #ffd700; color: #ffd700; }
         .sr { border-color: #a855f7; box-shadow: 0 0 15px #a855f7; color: #a855f7; }
         .r { border-color: #3b82f6; box-shadow: 0 0 10px #3b82f6; color: #3b82f6; }
         .c { border-color: #9ca3af; color: #9ca3af; }
@@ -74,7 +75,7 @@
 
     <div id="startScreen">
         <h1 class="game-title">JOJO x DEMON SLAYER</h1>
-        <p class="subtitle">สุ่มการ์ดตัวละคร (UR 0.1% | SSR 4.7%)</p>
+        <p class="subtitle">สุ่มการ์ดตัวละครข้ามจักรวาล</p>
         <button type="button" class="btn-start" onclick="startGame()">▶ กดเพื่อเข้าสู่เกม</button>
     </div>
 
@@ -126,72 +127,5 @@
         let totalDraws = 0;
 
         function startGame() {
-            var startBox = document.getElementById('startScreen');
-            var gameBox = document.getElementById('gameScreen');
-            if (startBox && gameBox) {
-                startBox.style.display = 'none';
-                gameBox.style.display = 'block';
-            }
-        }
-
-        function getRandomCard() {
-            const chance = Math.random() * 100;
-            let selectedRarity = "Common";
-            let selectedList = pool.c;
-
-            if (chance < 0.1) {
-                // UR 0.1% (0 - 0.099)
-                selectedRarity = "UR";
-                selectedList = pool.ur;
-            } else if (chance < 4.8) {
-                // SSR 4.7% (0.1 - 4.799)
-                selectedRarity = "SSR";
-                selectedList = pool.ssr;
-            } else if (chance < 29.8) {
-                // SR 25% (4.8 - 29.799)
-                selectedRarity = "SR";
-                selectedList = pool.sr;
-            } else if (chance < 65.0) {
-                // R 35.2%
-                selectedRarity = "R";
-                selectedList = pool.r;
-            } else {
-                // Common 35%
-                selectedRarity = "Common";
-                selectedList = pool.c;
-            }
-
-            const randomItem = selectedList[Math.floor(Math.random() * selectedList.length)];
-            return {
-                ...randomItem,
-                rarity: selectedRarity
-            };
-        }
-
-        function drawCard() {
-            if (isAnimating) return;
-            isAnimating = true;
-
-            totalDraws++;
-            document.getElementById('drawCount').innerText = totalDraws;
-
-            const card = document.getElementById('card');
-            const cardFront = document.getElementById('cardFront');
+            var startBox = document.getElementById
             
-            card.classList.remove('flipped');
-
-            setTimeout(() => {
-                const random = getRandomCard();
-                
-                cardFront.className = "card-face card-front " + random.class;
-                document.getElementById('cardRarity').innerText = random.rarity;
-                document.getElementById('cardName').innerText = random.name;
-                document.getElementById('cardAnime').innerText = random.anime;
-
-                card.classList.add('flipped');
-                isAnimating = false;
-            }, 300);
-        }
-    </script>
-</body>
-</html>
