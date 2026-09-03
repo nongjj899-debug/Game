@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>สุ่มการ์ดแฟนตาซี</title>
+    <title>JOJO x Demon Slayer Gacha</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { 
@@ -18,7 +18,7 @@
             text-align: center; width: 100%; padding: 20px;
         }
         .game-title {
-            font-size: 2.2rem; margin-bottom: 10px; color: #ff007f;
+            font-size: 2rem; margin-bottom: 10px; color: #ff007f;
             text-shadow: 0 0 15px #ff007f, 0 0 30px #ff007f;
         }
         .subtitle { font-size: 1rem; color: #aaa; margin-bottom: 40px; }
@@ -32,7 +32,7 @@
         /* หน้าสุ่มการ์ด */
         #gameScreen { display: none; text-align: center; }
         
-        .card-container { perspective: 1000px; margin: 25px auto; width: 220px; height: 320px; }
+        .card-container { perspective: 1000px; margin: 25px auto; width: 230px; height: 330px; }
         .card {
             width: 100%; height: 100%; border-radius: 16px;
             position: relative; transform-style: preserve-3d;
@@ -51,8 +51,9 @@
         .card-back::after { content: "❖"; font-size: 60px; color: #00d2ff; text-shadow: 0 0 15px #00d2ff; }
 
         .card-front { transform: rotateY(180deg); background: #151515; text-align: center; }
-        .rarity { font-size: 0.9rem; font-weight: bold; margin-bottom: 15px; text-transform: uppercase; }
-        .card-title { font-size: 1.4rem; font-weight: bold; }
+        .rarity { font-size: 1rem; font-weight: bold; margin-bottom: 10px; text-transform: uppercase; }
+        .card-title { font-size: 1.3rem; font-weight: bold; margin-bottom: 5px; }
+        .anime-tag { font-size: 0.8rem; opacity: 0.8; }
 
         /* สีตามระดับความแรร์ */
         .ur { border-color: #ffd700; box-shadow: 0 0 25px #ffd700; color: #ffd700; }
@@ -73,21 +74,22 @@
 
     <!-- หน้าแรกสำหรับกดเข้าเกม -->
     <div id="startScreen">
-        <h1 class="game-title">GACHA WORLD</h1>
-        <p class="subtitle">ตำนานการ์ดเวทมนตร์</p>
+        <h1 class="game-title">JOJO x DEMON SLAYER</h1>
+        <p class="subtitle">สุ่มการ์ดตัวละครข้ามจักรวาล</p>
         <button type="button" class="btn-start" onclick="startGame()">▶ กดเพื่อเข้าสู่เกม</button>
     </div>
 
     <!-- หน้าสุ่มการ์ด -->
     <div id="gameScreen">
-        <h1 style="font-size: 1.5rem; color: #ff007f;">✨ สุ่มการ์ด ✨</h1>
+        <h1 style="font-size: 1.5rem; color: #ff007f;">✨ สุ่มการ์ดตัวละคร ✨</h1>
 
         <div class="card-container" onclick="drawCard()">
             <div class="card" id="card">
                 <div class="card-face card-back"></div>
                 <div class="card-face card-front" id="cardFront">
-                    <div class="rarity" id="cardRarity">SSR</div>
-                    <div class="card-title" id="cardName">มังกรทอง</div>
+                    <div class="rarity" id="cardRarity">UR</div>
+                    <div class="card-title" id="cardName">ดีโอ (DIO)</div>
+                    <div class="anime-tag" id="cardAnime">JoJo's Bizarre Adventure</div>
                 </div>
             </div>
         </div>
@@ -97,11 +99,23 @@
 
     <script>
         const cardList = [
-            { name: "มังกรสุริยะเทพ", rarity: "UR", class: "ur" },
-            { name: "จอมเวทอนันต์", rarity: "SSR", class: "ssr" },
-            { name: "อัศวินเกราะเหล็ก", rarity: "SR", class: "sr" },
-            { name: "นักธนูพุ่มไม้", rarity: "R", class: "r" },
-            { name: "สไลม์ตัวน้อย", rarity: "Common", class: "c" }
+            // ระดับ UR (สูงสุด)
+            { name: "ดีโอ แบรนโด (DIO)", rarity: "UR", anime: "JoJo Part 3", class: "ur" },
+            { name: "คิบุตสึจิ มุซัน", rarity: "UR", anime: "Demon Slayer", class: "ur" },
+            
+            // ระดับ SSR (ระดับสูง)
+            { name: "คูโจ โจทาโร่", rarity: "SSR", anime: "JoJo Part 3", class: "ssr" },
+            { name: "คามาโดะ ทันจิโร่", rarity: "SSR", anime: "Demon Slayer", class: "ssr" },
+            { name: "เร็นโกคุ เคียวจูโร่", rarity: "SSR", anime: "Demon Slayer", class: "ssr" },
+            { name: "โจรูโน่ โจบาน่า", rarity: "SSR", anime: "JoJo Part 5", class: "ssr" },
+
+            // ระดับ SR / R / C
+            { name: "อากาสึมะ เซ็นอิทซึ", rarity: "SR", anime: "Demon Slayer", class: "sr" },
+            { name: "ฮาชิบิระ อิโนะสึเกะ", rarity: "SR", anime: "Demon Slayer", class: "sr" },
+            { name: "คิชิเบะ โรฮัง", rarity: "SR", anime: "JoJo Part 4", class: "sr" },
+            { name: "คามาโดะ เนซึโกะ", rarity: "R", anime: "Demon Slayer", class: "r" },
+            { name: "สปีดวากอน", rarity: "R", anime: "JoJo Part 1", class: "r" },
+            { name: "อสูรวัด (Temple Demon)", rarity: "Common", anime: "Demon Slayer", class: "c" }
         ];
 
         let isAnimating = false;
@@ -130,6 +144,7 @@
                 cardFront.className = "card-face card-front " + random.class;
                 document.getElementById('cardRarity').innerText = random.rarity;
                 document.getElementById('cardName').innerText = random.name;
+                document.getElementById('cardAnime').innerText = random.anime;
 
                 card.classList.add('flipped');
                 isAnimating = false;
