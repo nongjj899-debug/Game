@@ -98,25 +98,31 @@
     </div>
 
     <script>
-        const cardList = [
-            // ระดับ UR (สูงสุด)
-            { name: "ดีโอ แบรนโด (DIO)", rarity: "UR", anime: "JoJo Part 3", class: "ur" },
-            { name: "คิบุตสึจิ มุซัน", rarity: "UR", anime: "Demon Slayer", class: "ur" },
-            
-            // ระดับ SSR (ระดับสูง)
-            { name: "คูโจ โจทาโร่", rarity: "SSR", anime: "JoJo Part 3", class: "ssr" },
-            { name: "คามาโดะ ทันจิโร่", rarity: "SSR", anime: "Demon Slayer", class: "ssr" },
-            { name: "เร็นโกคุ เคียวจูโร่", rarity: "SSR", anime: "Demon Slayer", class: "ssr" },
-            { name: "โจรูโน่ โจบาน่า", rarity: "SSR", anime: "JoJo Part 5", class: "ssr" },
-
-            // ระดับ SR / R / C
-            { name: "อากาสึมะ เซ็นอิทซึ", rarity: "SR", anime: "Demon Slayer", class: "sr" },
-            { name: "ฮาชิบิระ อิโนะสึเกะ", rarity: "SR", anime: "Demon Slayer", class: "sr" },
-            { name: "คิชิเบะ โรฮัง", rarity: "SR", anime: "JoJo Part 4", class: "sr" },
-            { name: "คามาโดะ เนซึโกะ", rarity: "R", anime: "Demon Slayer", class: "r" },
-            { name: "สปีดวากอน", rarity: "R", anime: "JoJo Part 1", class: "r" },
-            { name: "อสูรวัด (Temple Demon)", rarity: "Common", anime: "Demon Slayer", class: "c" }
-        ];
+        // รายชื่อการ์ดแยกตามกลุ่มระดับ
+        const pool = {
+            ur: [
+                { name: "ดีโอ แบรนโด (DIO)", anime: "JoJo Part 3", class: "ur" },
+                { name: "คิบุตสึจิ มุซัน", anime: "Demon Slayer", class: "ur" }
+            ],
+            ssr: [
+                { name: "คูโจ โจทาโร่", anime: "JoJo Part 3", class: "ssr" },
+                { name: "คามาโดะ ทันจิโร่", anime: "Demon Slayer", class: "ssr" },
+                { name: "เร็นโกคุ เคียวจูโร่", anime: "Demon Slayer", class: "ssr" },
+                { name: "โจรูโน่ โจบาน่า", anime: "JoJo Part 5", class: "ssr" }
+            ],
+            sr: [
+                { name: "อากาสึมะ เซ็นอิทซึ", anime: "Demon Slayer", class: "sr" },
+                { name: "ฮาชิบิระ อิโนะสึเกะ", anime: "Demon Slayer", class: "sr" },
+                { name: "คิชิเบะ โรฮัง", anime: "JoJo Part 4", class: "sr" }
+            ],
+            r: [
+                { name: "คามาโดะ เนซึโกะ", anime: "Demon Slayer", class: "r" },
+                { name: "สปีดวากอน", anime: "JoJo Part 1", class: "r" }
+            ],
+            c: [
+                { name: "อสูรวัด (Temple Demon)", anime: "Demon Slayer", class: "c" }
+            ]
+        };
 
         let isAnimating = false;
 
@@ -129,6 +135,42 @@
             }
         }
 
+        // ฟังก์ชันคำนวณอัตราสุ่มตามเปอร์เซ็นต์
+        function getRandomCard() {
+            const chance = Math.random() * 100; // สุ่มตัวเลขตั้งแต่ 0 ถึง 99.999...
+            let selectedRarity = "c";
+            let selectedList = pool.c;
+
+            if (chance < 1.0) {
+                // โอกาส 1% (0 - 0.999)
+                selectedRarity = "UR";
+                selectedList = pool.ur;
+            } else if (chance < 6.5) {
+                // โอกาส 5.5% (1.0 - 6.499)
+                selectedRarity = "SSR";
+                selectedList = pool.ssr;
+            } else if (chance < 23.5) {
+                // โอกาส 17% (6.5 - 23.499)
+                selectedRarity = "SR";
+                selectedList = pool.sr;
+            } else if (chance < 60.0) {
+                // โอกาส 36.5%
+                selectedRarity = "R";
+                selectedList = pool.r;
+            } else {
+                // โอกาส 40% (Common)
+                selectedRarity = "Common";
+                selectedList = pool.c;
+            }
+
+            // สุ่มตัวละครจากกลุ่มระดับที่ได้
+            const randomItem = selectedList[Math.floor(Math.random() * selectedList.length)];
+            return {
+                ...randomItem,
+                rarity: selectedRarity
+            };
+        }
+
         function drawCard() {
             if (isAnimating) return;
             isAnimating = true;
@@ -139,7 +181,7 @@
             card.classList.remove('flipped');
 
             setTimeout(() => {
-                const random = cardList[Math.floor(Math.random() * cardList.length)];
+                const random = getRandomCard();
                 
                 cardFront.className = "card-face card-front " + random.class;
                 document.getElementById('cardRarity').innerText = random.rarity;
