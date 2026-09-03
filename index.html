@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JOJO x Demon Slayer Gacha</title>
+    <title>JOJO x Demon Slayer Hardcore Gacha</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { 
@@ -14,9 +14,7 @@
         }
 
         /* หน้ากดเข้าเกม */
-        #startScreen {
-            text-align: center; width: 100%; padding: 20px;
-        }
+        #startScreen { text-align: center; width: 100%; padding: 20px; }
         .game-title {
             font-size: 2rem; margin-bottom: 10px; color: #ff007f;
             text-shadow: 0 0 15px #ff007f, 0 0 30px #ff007f;
@@ -32,7 +30,12 @@
         /* หน้าสุ่มการ์ด */
         #gameScreen { display: none; text-align: center; }
         
-        .card-container { perspective: 1000px; margin: 25px auto; width: 230px; height: 330px; }
+        .counter-box {
+            font-size: 0.9rem; color: #ff007f; margin-top: 5px;
+            background: rgba(255,255,255,0.05); padding: 5px 15px; border-radius: 20px; display: inline-block;
+        }
+
+        .card-container { perspective: 1000px; margin: 20px auto; width: 230px; height: 330px; }
         .card {
             width: 100%; height: 100%; border-radius: 16px;
             position: relative; transform-style: preserve-3d;
@@ -75,13 +78,14 @@
     <!-- หน้าแรกสำหรับกดเข้าเกม -->
     <div id="startScreen">
         <h1 class="game-title">JOJO x DEMON SLAYER</h1>
-        <p class="subtitle">สุ่มการ์ดตัวละครข้ามจักรวาล</p>
+        <p class="subtitle">สุ่มการ์ดระดับมหาโหด (UR 0.1%)</p>
         <button type="button" class="btn-start" onclick="startGame()">▶ กดเพื่อเข้าสู่เกม</button>
     </div>
 
     <!-- หน้าสุ่มการ์ด -->
     <div id="gameScreen">
         <h1 style="font-size: 1.5rem; color: #ff007f;">✨ สุ่มการ์ดตัวละคร ✨</h1>
+        <div class="counter-box">สุ่มไปแล้ว: <span id="drawCount">0</span> ครั้ง</div>
 
         <div class="card-container" onclick="drawCard()">
             <div class="card" id="card">
@@ -98,7 +102,6 @@
     </div>
 
     <script>
-        // รายชื่อการ์ดแยกตามกลุ่มระดับ
         const pool = {
             ur: [
                 { name: "ดีโอ แบรนโด (DIO)", anime: "JoJo Part 3", class: "ur" },
@@ -125,6 +128,7 @@
         };
 
         let isAnimating = false;
+        let totalDraws = 0;
 
         function startGame() {
             var startBox = document.getElementById('startScreen');
@@ -135,35 +139,33 @@
             }
         }
 
-        // ฟังก์ชันคำนวณอัตราสุ่มตามเปอร์เซ็นต์
         function getRandomCard() {
-            const chance = Math.random() * 100; // สุ่มตัวเลขตั้งแต่ 0 ถึง 99.999...
-            let selectedRarity = "c";
+            const chance = Math.random() * 100; // สุ่มเลข 0 - 99.999...
+            let selectedRarity = "Common";
             let selectedList = pool.c;
 
-            if (chance < 1.0) {
-                // โอกาส 1% (0 - 0.999)
+            if (chance < 0.1) {
+                // โอกาส 0.1% (0 - 0.099)
                 selectedRarity = "UR";
                 selectedList = pool.ur;
-            } else if (chance < 6.5) {
-                // โอกาส 5.5% (1.0 - 6.499)
+            } else if (chance < 2.6) {
+                // โอกาส 2.5% (0.1 - 2.599)
                 selectedRarity = "SSR";
                 selectedList = pool.ssr;
-            } else if (chance < 23.5) {
-                // โอกาส 17% (6.5 - 23.499)
+            } else if (chance < 12.6) {
+                // โอกาส 10% (2.6 - 12.599)
                 selectedRarity = "SR";
                 selectedList = pool.sr;
-            } else if (chance < 60.0) {
-                // โอกาส 36.5%
+            } else if (chance < 45.0) {
+                // โอกาส 32.4%
                 selectedRarity = "R";
                 selectedList = pool.r;
             } else {
-                // โอกาส 40% (Common)
+                // โอกาส 55%
                 selectedRarity = "Common";
                 selectedList = pool.c;
             }
 
-            // สุ่มตัวละครจากกลุ่มระดับที่ได้
             const randomItem = selectedList[Math.floor(Math.random() * selectedList.length)];
             return {
                 ...randomItem,
@@ -174,6 +176,9 @@
         function drawCard() {
             if (isAnimating) return;
             isAnimating = true;
+
+            totalDraws++;
+            document.getElementById('drawCount').innerText = totalDraws;
 
             const card = document.getElementById('card');
             const cardFront = document.getElementById('cardFront');
