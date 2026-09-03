@@ -14,7 +14,7 @@
             padding: 20px 10px;
         }
 
-        #startScreen { text-align: center; width: 100%; margin-top: 30vh; }
+        #startScreen { text-align: center; width: 100%; margin-top: 25vh; }
         .game-title {
             font-size: 2rem; margin-bottom: 10px; color: #ff007f;
             text-shadow: 0 0 15px #ff007f, 0 0 30px #ff007f;
@@ -57,7 +57,7 @@
         .card-title { font-size: 1.2rem; font-weight: bold; margin-bottom: 5px; }
         .anime-tag { font-size: 0.8rem; opacity: 0.8; }
 
-        /* ปรับสีความแรร์: UR สีแดงเลือด / SSR สีเหลืองทอง */
+        /* สีการ์ด: UR สีแดงเลือด / SSR สีเหลืองทอง */
         .ur { border-color: #ff0033; box-shadow: 0 0 25px #ff0033; color: #ff0033; }
         .ssr { border-color: #ffd700; box-shadow: 0 0 20px #ffd700; color: #ffd700; }
         .sr { border-color: #a855f7; box-shadow: 0 0 15px #a855f7; color: #a855f7; }
@@ -77,7 +77,6 @@
             border-radius: 20px; cursor: pointer; margin-top: 15px;
         }
 
-        /* สมุดสะสมการ์ด */
         #albumSection {
             margin-top: 20px; width: 100%;
             background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1);
@@ -88,4 +87,197 @@
         }
         .album-item {
             background: #111; border: 2px solid #333; border-radius: 10px;
+            padding: 10px; font-size: 0.85rem; position: relative;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            min-height: 80px; opacity: 0.4;
+        }
+        .album-item.unlocked { opacity: 1; }
+        .album-item .count-badge {
+            position: absolute; top: 5px; right: 8px; font-size: 0.75rem;
+            background: #ff007f; color: white; padding: 2px 6px; border-radius: 10px; font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- หน้าแรกสำหรับกดเข้าเกม -->
+    <div id="startScreen">
+        <h1 class="game-title">JOJO x DEMON SLAYER</h1>
+        <p class="subtitle">สุ่มการ์ดตัวละครข้ามจักรวาล</p>
+        <button type="button" class="btn-start" onclick="startGame()">▶ กดเพื่อเข้าสู่เกม</button>
+    </div>
+
+    <!-- หน้าสุ่มการ์ด -->
+    <div id="gameScreen">
+        <h1 style="font-size: 1.5rem; color: #ff007f;">✨ สุ่มการ์ดตัวละคร ✨</h1>
+        <div class="counter-box">สุ่มไปแล้ว: <span id="drawCount">0</span> ครั้ง</div>
+
+        <div class="card-container" onclick="drawCard()">
+            <div class="card" id="card">
+                <div class="card-face card-back"></div>
+                <div class="card-face card-front" id="cardFront">
+                    <div class="rarity" id="cardRarity">UR</div>
+                    <div class="card-title" id="cardName">ดีโอ (DIO)</div>
+                    <div class="anime-tag" id="cardAnime">JoJo's Bizarre Adventure</div>
+                </div>
+            </div>
+        </div>
+
+        <button type="button" class="btn-draw" onclick="drawCard()">สุ่มการ์ด!</button>
+        <br>
+        <button type="button" class="btn-toggle-album" onclick="toggleAlbum()">📦 คอลเลกชันการ์ด (<span id="unlockedCount">0</span>/12)</button>
+
+        <div id="albumSection">
+            <h3 style="font-size: 1.1rem; color: #00d2ff;">คอลเลกชันสะสม</h3>
+            <div class="album-grid" id="albumGrid"></div>
+        </div>
+    </div>
+
+    <script>
+        const pool = {
+            ur: [
+                { id: 1, name: "ดีโอ แบรนโด (DIO)", anime: "JoJo Part 3", class: "ur" },
+                { id: 2, name: "คิบุตสึจิ มุซัน", anime: "Demon Slayer", class: "ur" }
+            ],
+            ssr: [
+                { id: 3, name: "คูโจ โจทาโร่", anime: "JoJo Part 3", class: "ssr" },
+                { id: 4, name: "คามาโดะ ทันจิโร่", anime: "Demon Slayer", class: "ssr" },
+                { id: 5, name: "เร็นโกคุ เคียวจูโร่", anime: "Demon Slayer", class: "ssr" },
+                { id: 6, name: "โจรูโน่ โจบาน่า", anime: "JoJo Part 5", class: "ssr" }
+            ],
+            sr: [
+                { id: 7, name: "อากาสึมะ เซ็นอิทซึ", anime: "Demon Slayer", class: "sr" },
+                { id: 8, name: "ฮาชิบิระ อิโนะสึเกะ", anime: "Demon Slayer", class: "sr" },
+                { id: 9, name: "คิชิเบะ โรฮัง", anime: "JoJo Part 4", class: "sr" }
+            ],
+            r: [
+                { id: 10, name: "คามาโดะ เนซึโกะ", anime: "Demon Slayer", class: "r" },
+                { id: 11, name: "สปีดวากอน", anime: "JoJo Part 1", class: "r" }
+            ],
+            c: [
+                { id: 12, name: "อสูรวัด (Temple Demon)", anime: "Demon Slayer", class: "c" }
+            ]
+        };
+
+        const allCards = [...pool.ur, ...pool.ssr, ...pool.sr, ...pool.r, ...pool.c];
+        const userInventory = {};
+
+        let isAnimating = false;
+        let totalDraws = 0;
+
+        function startGame() {
+            var startBox = document.getElementById('startScreen');
+            var gameBox = document.getElementById('gameScreen');
+            if (startBox) startBox.style.display = 'none';
+            if (gameBox) gameBox.style.display = 'block';
+            initAlbum();
+        }
+
+        function initAlbum() {
+            const grid = document.getElementById('albumGrid');
+            if (!grid) return;
+            grid.innerHTML = '';
             
+            allCards.forEach(function(card) {
+                userInventory[card.id] = userInventory[card.id] || 0;
+
+                const item = document.createElement('div');
+                item.className = 'album-item ' + card.class;
+                item.id = 'album-item-' + card.id;
+                item.innerHTML = `
+                    <span class="count-badge" id="count-${card.id}" style="display:none;">x0</span>
+                    <div style="font-weight:bold; font-size:0.75rem;" id="rarity-${card.id}">🔒 ล็อกอยู่</div>
+                    <div style="margin-top:4px;" id="name-${card.id}">???</div>
+                `;
+                grid.appendChild(item);
+            });
+        }
+
+        function toggleAlbum() {
+            const album = document.getElementById('albumSection');
+            if (album) {
+                album.style.display = (album.style.display === 'none') ? 'block' : 'none';
+            }
+        }
+
+        function getRandomCard() {
+            const chance = Math.random() * 100;
+            let selectedRarity = "Common";
+            let selectedList = pool.c;
+
+            if (chance < 0.1) {
+                selectedRarity = "UR";
+                selectedList = pool.ur;
+            } else if (chance < 4.8) {
+                selectedRarity = "SSR";
+                selectedList = pool.ssr;
+            } else if (chance < 29.8) {
+                selectedRarity = "SR";
+                selectedList = pool.sr;
+            } else if (chance < 65.0) {
+                selectedRarity = "R";
+                selectedList = pool.r;
+            } else {
+                selectedRarity = "Common";
+                selectedList = pool.c;
+            }
+
+            const randomItem = selectedList[Math.floor(Math.random() * selectedList.length)];
+            return {
+                ...randomItem,
+                rarity: selectedRarity
+            };
+        }
+
+        function drawCard() {
+            if (isAnimating) return;
+            isAnimating = true;
+
+            totalDraws++;
+            document.getElementById('drawCount').innerText = totalDraws;
+
+            const card = document.getElementById('card');
+            const cardFront = document.getElementById('cardFront');
+            
+            card.classList.remove('flipped');
+
+            setTimeout(function() {
+                const random = getRandomCard();
+                
+                cardFront.className = "card-face card-front " + random.class;
+                document.getElementById('cardRarity').innerText = random.rarity;
+                document.getElementById('cardName').innerText = random.name;
+                document.getElementById('cardAnime').innerText = random.anime;
+
+                userInventory[random.id] = (userInventory[random.id] || 0) + 1;
+                updateAlbum(random);
+
+                card.classList.add('flipped');
+                isAnimating = false;
+            }, 300);
+        }
+
+        function updateAlbum(card) {
+            const item = document.getElementById('album-item-' + card.id);
+            const countBadge = document.getElementById('count-' + card.id);
+            
+            if (item) {
+                item.classList.add('unlocked');
+                document.getElementById('rarity-' + card.id).innerText = card.rarity;
+                document.getElementById('name-' + card.id).innerText = card.name;
+                
+                if (countBadge) {
+                    countBadge.innerText = 'x' + userInventory[card.id];
+                    countBadge.style.display = 'block';
+                }
+
+                let unlockedTypes = 0;
+                for (let key in userInventory) {
+                    if (userInventory[key] > 0) unlockedTypes++;
+                }
+                document.getElementById('unlockedCount').innerText = unlockedTypes;
+            }
+        }
+    </script>
+</body>
+</html>
