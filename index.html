@@ -127,5 +127,72 @@
         let totalDraws = 0;
 
         function startGame() {
-            var startBox = document.getElementById
+            var startBox = document.getElementById('startScreen');
+            var gameBox = document.getElementById('gameScreen');
+            if (startBox && gameBox) {
+                startBox.style.display = 'none';
+                gameBox.style.display = 'block';
+            }
+        }
+
+        function getRandomCard() {
+            const chance = Math.random() * 100;
+            let selectedRarity = "Common";
+            let selectedList = pool.c;
+
+            if (chance < 0.1) {
+                // UR 0.1%
+                selectedRarity = "UR";
+                selectedList = pool.ur;
+            } else if (chance < 4.8) {
+                // SSR 4.7%
+                selectedRarity = "SSR";
+                selectedList = pool.ssr;
+            } else if (chance < 29.8) {
+                // SR 25%
+                selectedRarity = "SR";
+                selectedList = pool.sr;
+            } else if (chance < 65.0) {
+                // R 35.2%
+                selectedRarity = "R";
+                selectedList = pool.r;
+            } else {
+                // Common 35%
+                selectedRarity = "Common";
+                selectedList = pool.c;
+            }
+
+            const randomItem = selectedList[Math.floor(Math.random() * selectedList.length)];
+            return {
+                ...randomItem,
+                rarity: selectedRarity
+            };
+        }
+
+        function drawCard() {
+            if (isAnimating) return;
+            isAnimating = true;
+
+            totalDraws++;
+            document.getElementById('drawCount').innerText = totalDraws;
+
+            const card = document.getElementById('card');
+            const cardFront = document.getElementById('cardFront');
             
+            card.classList.remove('flipped');
+
+            setTimeout(() => {
+                const random = getRandomCard();
+                
+                cardFront.className = "card-face card-front " + random.class;
+                document.getElementById('cardRarity').innerText = random.rarity;
+                document.getElementById('cardName').innerText = random.name;
+                document.getElementById('cardAnime').innerText = random.anime;
+
+                card.classList.add('flipped');
+                isAnimating = false;
+            }, 300);
+        }
+    </script>
+</body>
+</html>
