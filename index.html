@@ -29,14 +29,22 @@
 
         #gameScreen { display: none; text-align: center; width: 100%; max-width: 500px; }
         
-        .counter-box {
-            font-size: 0.85rem; color: #ff007f; margin-top: 5px;
-            background: rgba(255,255,255,0.05); padding: 5px 12px; border-radius: 20px; display: inline-block;
+        .status-bar {
+            display: flex; justify-content: space-around; flex-wrap: wrap; gap: 5px;
+            margin-bottom: 10px;
         }
-
+        .gem-box {
+            font-size: 0.9rem; color: #00ffff; font-weight: bold;
+            background: rgba(0, 255, 255, 0.1); padding: 5px 12px; border-radius: 20px;
+            border: 1px solid rgba(0, 255, 255, 0.4); text-shadow: 0 0 5px #00ffff;
+        }
+        .counter-box {
+            font-size: 0.85rem; color: #ff007f;
+            background: rgba(255,255,255,0.05); padding: 5px 12px; border-radius: 20px;
+        }
         .pity-box {
-            font-size: 0.85rem; color: #ffd700; margin-top: 5px; margin-left: 5px;
-            background: rgba(255, 215, 0, 0.1); padding: 5px 12px; border-radius: 20px; display: inline-block;
+            font-size: 0.85rem; color: #ffd700;
+            background: rgba(255, 215, 0, 0.1); padding: 5px 12px; border-radius: 20px;
             border: 1px solid rgba(255, 215, 0, 0.3);
         }
 
@@ -59,6 +67,27 @@
             transition: width 0.3s ease;
         }
         .battle-log { font-size: 0.85rem; color: #ffcc00; height: 22px; font-weight: bold; margin-top: 5px; }
+
+        /* โซนเควสต์ */
+        .quest-container {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            padding: 10px 15px;
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        .quest-title { font-size: 0.95rem; color: #00d2ff; font-weight: bold; margin-bottom: 8px; text-align: center; }
+        .quest-item {
+            display: flex; justify-content: space-between; align-items: center;
+            font-size: 0.8rem; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .quest-item:last-child { border-bottom: none; }
+        .btn-claim {
+            padding: 4px 10px; font-size: 0.75rem; font-weight: bold; color: #fff;
+            background: #00b894; border: none; border-radius: 12px; cursor: pointer;
+        }
+        .btn-claim:disabled { background: #555; cursor: not-allowed; }
 
         .card-container { perspective: 1000px; margin: 15px auto; width: 200px; height: 280px; }
         .card {
@@ -141,7 +170,13 @@
     </div>
 
     <div id="gameScreen">
-        <!-- โซนบอส (ปุ่มโจมตีย้ายมาอยู่นี่) -->
+        <div class="status-bar">
+            <div class="gem-box">💎 อัญมณี: <span id="gemCount">10</span></div>
+            <div class="counter-box">สุ่มไปแล้ว: <span id="drawCount">0</span> ครั้ง</div>
+            <div class="pity-box">การันตี SSR: <span id="pityCount">0</span>/25</div>
+        </div>
+
+        <!-- โซนบอส -->
         <div class="boss-container">
             <div class="boss-name" id="bossName">⚡ Dio Over Heaven</div>
             <div class="hp-bar-bg">
@@ -152,8 +187,18 @@
             <button type="button" class="btn-action btn-attack" onclick="attackBoss()">⚔️ โจมตีบอส!</button>
         </div>
 
-        <div class="counter-box">สุ่มไปแล้ว: <span id="drawCount">0</span> ครั้ง</div>
-        <div class="pity-box">การันตี SSR: <span id="pityCount">0</span>/25</div>
+        <!-- โซนเควสต์ -->
+        <div class="quest-container">
+            <div class="quest-title">📜 เควสต์รับอัญมณีฟรี</div>
+            <div class="quest-item">
+                <span>🎁 พลังเวทสนับสนุน (รับฟรี)</span>
+                <button type="button" class="btn-claim" id="btnDailyQuest" onclick="claimDailyGems()">รับ 3 💎</button>
+            </div>
+            <div class="quest-item">
+                <span>🎲 สุ่มการ์ดครบ 10 ครั้ง (<span id="questDrawCount">0</span>/10)</span>
+                <button type="button" class="btn-claim" id="btnDrawQuest" onclick="claimDrawQuest()" disabled>รับ 5 💎</button>
+            </div>
+        </div>
 
         <div class="card-container" onclick="drawCard()">
             <div class="card" id="card">
@@ -166,7 +211,7 @@
             </div>
         </div>
 
-        <button type="button" class="btn-action btn-draw" onclick="drawCard()">🎲 สุ่มการ์ด</button>
+        <button type="button" class="btn-action btn-draw" onclick="drawCard()">🎲 สุ่มการ์ด (ใช้ 1 💎)</button>
         <br>
         <button type="button" class="btn-toggle-album" onclick="toggleAlbum()">📦 คอลเลกชันการ์ด (<span id="unlockedCount">0</span>/12)</button>
 
@@ -214,7 +259,9 @@
 
         let isAnimating = false;
         let totalDraws = 0;
-        let pityCounter = 0; // ตัวนับการันตี SSR (สะสมได้สูงสุด 25)
+        let pityCounter = 0;
+        let gems = 10; // เริ่มต้นมี 10 อัญมณี
+        let drawQuestProgress = 0;
 
         function startGame() {
             var startBox = document.getElementById('startScreen');
@@ -223,6 +270,11 @@
             if (gameBox) gameBox.style.display = 'block';
             initAlbum();
             updateBossUI();
+            updateGemsUI();
+        }
+
+        function updateGemsUI() {
+            document.getElementById('gemCount').innerText = gems;
         }
 
         function initAlbum() {
@@ -278,7 +330,9 @@
             }
 
             if (boss.hp <= 0) {
-                document.getElementById('battleLog').innerText = `🎉 พิชิต ${boss.name} สำเร็จ!`;
+                gems += 5; // ได้รับ 5 อัญมณีเมื่อตีบอสตาย
+                updateGemsUI();
+                document.getElementById('battleLog').innerText = `🎉 พิชิต ${boss.name} สำเร็จ! รับ +5 💎 อัญมณี!`;
                 setTimeout(nextBoss, 1500);
             }
         }
@@ -299,6 +353,28 @@
             document.getElementById('hpBar').style.width = percent + '%';
         }
 
+        function claimDailyGems() {
+            gems += 3;
+            updateGemsUI();
+            const btn = document.getElementById('btnDailyQuest');
+            btn.disabled = true;
+            btn.innerText = 'รับแล้ว';
+        }
+
+        function claimDrawQuest() {
+            if (drawQuestProgress >= 10) {
+                gems += 5;
+                drawQuestProgress -= 10;
+                updateGemsUI();
+                document.getElementById('questDrawCount').innerText = drawQuestProgress;
+                
+                const btn = document.getElementById('btnDrawQuest');
+                if (drawQuestProgress < 10) {
+                    btn.disabled = true;
+                }
+            }
+        }
+
         function toggleAlbum() {
             const album = document.getElementById('albumSection');
             if (album) {
@@ -309,7 +385,6 @@
         function getRandomCard() {
             pityCounter++;
             
-            // เช็กการันตีเมื่อครบ 25 ครั้ง
             if (pityCounter >= 25) {
                 pityCounter = 0;
                 document.getElementById('pityCount').innerText = pityCounter;
@@ -324,11 +399,11 @@
             if (chance < 0.1) {
                 selectedRarity = "UR";
                 selectedList = pool.ur;
-                pityCounter = 0; // รีเซ็ตตัวนับถ้าได้ UR
+                pityCounter = 0;
             } else if (chance < 4.8) {
                 selectedRarity = "SSR";
                 selectedList = pool.ssr;
-                pityCounter = 0; // รีเซ็ตตัวนับถ้าได้ SSR
+                pityCounter = 0;
             } else if (chance < 29.8) {
                 selectedRarity = "SR";
                 selectedList = pool.sr;
@@ -351,10 +426,27 @@
 
         function drawCard() {
             if (isAnimating) return;
+
+            // ตรวจสอบอัญมณี
+            if (gems < 1) {
+                alert('💎 อัญมณีไม่พอ! โปรดทำเควสต์เพื่อรับอัญมณีเพิ่ม');
+                return;
+            }
+
+            gems--; // หัก 1 อัญมณี
+            updateGemsUI();
+
             isAnimating = true;
 
             totalDraws++;
             document.getElementById('drawCount').innerText = totalDraws;
+
+            // ปรับปรุงความคืบหน้าเควสต์
+            drawQuestProgress++;
+            document.getElementById('questDrawCount').innerText = Math.min(drawQuestProgress, 10);
+            if (drawQuestProgress >= 10) {
+                document.getElementById('btnDrawQuest').disabled = false;
+            }
 
             const card = document.getElementById('card');
             const cardFront = document.getElementById('cardFront');
@@ -370,35 +462,4 @@
                 document.getElementById('cardName').innerText = random.name;
                 document.getElementById('cardAnime').innerText = random.anime;
 
-                userInventory[random.id] = (userInventory[random.id] || 0) + 1;
-                updateAlbum(random);
-
-                card.classList.add('flipped');
-                isAnimating = false;
-            }, 300);
-        }
-
-        function updateAlbum(card) {
-            const item = document.getElementById('album-item-' + card.id);
-            const countBadge = document.getElementById('count-' + card.id);
-            
-            if (item) {
-                item.classList.add('unlocked');
-                document.getElementById('rarity-' + card.id).innerText = card.class.toUpperCase();
-                document.getElementById('name-' + card.id).innerText = card.name;
-                
-                if (countBadge) {
-                    countBadge.innerText = 'x' + userInventory[card.id];
-                    countBadge.style.display = 'block';
-                }
-
-                let unlockedTypes = 0;
-                for (let key in userInventory) {
-                    if (userInventory[key] > 0) unlockedTypes++;
-                }
-                document.getElementById('unlockedCount').innerText = unlockedTypes;
-            }
-        }
-    </script>
-</body>
-</html>
+                       
