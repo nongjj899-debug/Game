@@ -132,4 +132,250 @@
         <p class="subtitle">สุ่มการ์ด & พิชิตบอสสุดแกร่ง</p>
         <button type="button" class="btn-start" onclick="startGame()">▶ กดเพื่อเข้าสู่เกม</button>
     </div>
-    
+
+    <div id="gameScreen">
+        <div class="boss-container">
+            <div class="boss-name" id="bossName">👹 Dio Over Heaven</div>
+            <div class="hp-bar-bg">
+                <div class="hp-bar-fill" id="hpBar"></div>
+            </div>
+            <div style="font-size:0.85rem;" id="hpText">HP: 500,000 / 500,000</div>
+            <div class="battle-log" id="battleLog">เตรียมตัวเข้าสู่การต่อสู้!</div>
+        </div>
+
+        <div class="counter-box">สุ่มไปแล้ว: <span id="drawCount">0</span> ครั้ง</div>
+
+        <div class="card-container" onclick="drawCard()">
+            <div class="card" id="card">
+                <div class="card-face card-back"></div>
+                <div class="card-face card-front" id="cardFront">
+                    <div class="rarity" id="cardRarity">UR</div>
+                    <div class="card-title" id="cardName">ดีโอ (DIO)</div>
+                    <div class="anime-tag" id="cardAnime">JoJo Part 3</div>
+                </div>
+            </div>
+        </div>
+
+        <button type="button" class="btn-action btn-draw" onclick="drawCard()">🎲 สุ่มการ์ด</button>
+        <button type="button" class="btn-action btn-attack" onclick="attackBoss()">⚔️ โจมตีบอส!</button>
+        <br>
+        <button type="button" class="btn-toggle-album" onclick="toggleAlbum()">📦 คอลเลกชันการ์ด (<span id="unlockedCount">0</span>/12)</button>
+
+        <div id="albumSection">
+            <h3 style="font-size: 1rem; color: #00d2ff;">คอลเลกชัน (คลิกการ์ดที่ปลดล็อกเพื่อใช้สู้)</h3>
+            <div class="album-grid" id="albumGrid"></div>
+        </div>
+    </div>
+
+    <script>
+        const bosses = [
+            { name: "⚡ Dio Over Heaven", maxHp: 500000, hp: 500000 },
+            { name: "🩸 มุซัน ร่างปีศาจ", maxHp: 300000, hp: 300000 }
+        ];
+        let currentBossIndex = 0;
+
+        const pool = {
+            ur: [
+                { id: 1, name: "ดีโอ แบรนโด (DIO)", anime: "JoJo Part 3", class: "ur", atk: 25000 },
+                { id: 2, name: "คิบุตสึจิ มุซัน", anime: "Demon Slayer", class: "ur", atk: 22000 }
+            ],
+            ssr: [
+                { id: 3, name: "คูโจ โจทาโร่", anime: "JoJo Part 3", class: "ssr", atk: 8000 },
+                { id: 4, name: "คามาโดะ ทันจิโร่", anime: "Demon Slayer", class: "ssr", atk: 7000 },
+                { id: 5, name: "เร็นโกคุ เคียวจูโร่", anime: "Demon Slayer", class: "ssr", atk: 7500 },
+                { id: 6, name: "โจรูโน่ โจบาน่า", anime: "JoJo Part 5", class: "ssr", atk: 8500 }
+            ],
+            sr: [
+                { id: 7, name: "อากาสึมะ เซ็นอิทซึ", anime: "Demon Slayer", class: "sr", atk: 2500 },
+                { id: 8, name: "ฮาชิบิระ อิโนะสึเกะ", anime: "Demon Slayer", class: "sr", atk: 2200 },
+                { id: 9, name: "คิชิเบะ โรฮัง", anime: "JoJo Part 4", class: "sr", atk: 2000 }
+            ],
+            r: [
+                { id: 10, name: "คามาโดะ เนซึโกะ", anime: "Demon Slayer", class: "r", atk: 800 },
+                { id: 11, name: "สปีดวากอน", anime: "JoJo Part 1", class: "r", atk: 600 }
+            ],
+            c: [
+                { id: 12, name: "อสูรวัด (Temple Demon)", anime: "Demon Slayer", class: "c", atk: 200 }
+            ]
+        };
+
+        const allCards = [...pool.ur, ...pool.ssr, ...pool.sr, ...pool.r, ...pool.c];
+        const userInventory = {};
+        let activeCard = null; // การ์ดที่ใช้อยู่ปัจจุบัน
+
+        let isAnimating = false;
+        let totalDraws = 0;
+
+        function startGame() {
+            var startBox = document.getElementById('startScreen');
+            var gameBox = document.getElementById('gameScreen');
+            if (startBox) startBox.style.display = 'none';
+            if (gameBox) gameBox.style.display = 'block';
+            initAlbum();
+            updateBossUI();
+        }
+
+        function initAlbum() {
+            const grid = document.getElementById('albumGrid');
+            if (!grid) return;
+            grid.innerHTML = '';
+            
+            allCards.forEach(function(card) {
+                userInventory[card.id] = userInventory[card.id] || 0;
+
+                const item = document.createElement('div');
+                item.className = 'album-item ' + card.class;
+                item.id = 'album-item-' + card.id;
+                item.onclick = function() { selectCardToBattle(card); };
+                item.innerHTML = `
+                    <span class="count-badge" id="count-${card.id}" style="display:none;">x0</span>
+                    <div style="font-weight:bold; font-size:0.75rem;" id="rarity-${card.id}">🔒 ล็อกอยู่</div>
+                    <div style="margin-top:4px;" id="name-${card.id}">???</div>
+                    <div style="font-size:0.65rem; color:#aaa;" id="atk-${card.id}">ATK: ${card.atk}</div>
+                `;
+                grid.appendChild(item);
+            });
+        }
+
+        function selectCardToBattle(card) {
+            if (userInventory[card.id] > 0) {
+                activeCard = card;
+                document.querySelectorAll('.album-item').forEach(el => el.classList.remove('selected'));
+                document.getElementById('album-item-' + card.id).classList.add('selected');
+                document.getElementById('battleLog').innerText = `เลือก ${card.name} เข้าสู่การต่อสู้! (ATK: ${card.atk})`;
+            }
+        }
+
+        function attackBoss() {
+            if (!activeCard) {
+                document.getElementById('battleLog').innerText = '❌ โปรดสุ่มการ์ดหรือเลือกการ์ดในคอลเลกชันก่อน!';
+                return;
+            }
+
+            let boss = bosses[currentBossIndex];
+            if (boss.hp <= 0) return;
+
+            // สุ่มพลังโจมตีคริติคอล
+            let isCrit = Math.random() < 0.2;
+            let damage = isCrit ? activeCard.atk * 2 : activeCard.atk;
+
+            boss.hp = Math.max(0, boss.hp - damage);
+            updateBossUI();
+
+            if (isCrit) {
+                document.getElementById('battleLog').innerText = `💥 ติดคริติคอล! ${activeCard.name} โจมตีใส่ ${damage} ดาเมจ!`;
+            } else {
+                document.getElementById('battleLog').innerText = `⚔️ ${activeCard.name} โจมตีใส่บอส ${damage} ดาเมจ!`;
+            }
+
+            if (boss.hp <= 0) {
+                document.getElementById('battleLog').innerText = `🎉 พิชิต ${boss.name} สำเร็จ!`;
+                setTimeout(nextBoss, 1500);
+            }
+        }
+
+        function nextBoss() {
+            currentBossIndex = (currentBossIndex + 1) % bosses.length;
+            bosses[currentBossIndex].hp = bosses[currentBossIndex].maxHp;
+            updateBossUI();
+            document.getElementById('battleLog').innerText = `⚠️ บอสตัวใหม่ปรากฏตัว: ${bosses[currentBossIndex].name}!`;
+        }
+
+        function updateBossUI() {
+            let boss = bosses[currentBossIndex];
+            document.getElementById('bossName').innerText = boss.name;
+            document.getElementById('hpText').innerText = `HP: ${boss.hp.toLocaleString()} / ${boss.maxHp.toLocaleString()}`;
+            
+            let percent = (boss.hp / boss.maxHp) * 100;
+            document.getElementById('hpBar').style.width = percent + '%';
+        }
+
+        function toggleAlbum() {
+            const album = document.getElementById('albumSection');
+            if (album) {
+                album.style.display = (album.style.display === 'none') ? 'block' : 'none';
+            }
+        }
+
+        function getRandomCard() {
+            const chance = Math.random() * 100;
+            let selectedRarity = "Common";
+            let selectedList = pool.c;
+
+            if (chance < 0.1) {
+                selectedRarity = "UR";
+                selectedList = pool.ur;
+            } else if (chance < 4.8) {
+                selectedRarity = "SSR";
+                selectedList = pool.ssr;
+            } else if (chance < 29.8) {
+                selectedRarity = "SR";
+                selectedList = pool.sr;
+            } else if (chance < 65.0) {
+                selectedRarity = "R";
+                selectedList = pool.r;
+            } else {
+                selectedRarity = "Common";
+                selectedList = pool.c;
+            }
+
+            const randomItem = selectedList[Math.floor(Math.random() * selectedList.length)];
+            return {
+                ...randomItem,
+                rarity: selectedRarity
+            };
+        }
+
+        function drawCard() {
+            if (isAnimating) return;
+            isAnimating = true;
+
+            totalDraws++;
+            document.getElementById('drawCount').innerText = totalDraws;
+
+            const card = document.getElementById('card');
+            const cardFront = document.getElementById('cardFront');
+            
+            card.classList.remove('flipped');
+
+            setTimeout(function() {
+                const random = getRandomCard();
+                activeCard = random; // ตั้งการ์ดล่าสุดเป็นหลักสำหรับสู้ทันที
+                
+                cardFront.className = "card-face card-front " + random.class;
+                document.getElementById('cardRarity').innerText = random.rarity;
+                document.getElementById('cardName').innerText = random.name;
+                document.getElementById('cardAnime').innerText = random.anime;
+
+                userInventory[random.id] = (userInventory[random.id] || 0) + 1;
+                updateAlbum(random);
+
+                card.classList.add('flipped');
+                isAnimating = false;
+            }, 300);
+        }
+
+        function updateAlbum(card) {
+            const item = document.getElementById('album-item-' + card.id);
+            const countBadge = document.getElementById('count-' + card.id);
+            
+            if (item) {
+                item.classList.add('unlocked');
+                document.getElementById('rarity-' + card.id).innerText = card.rarity;
+                document.getElementById('name-' + card.id).innerText = card.name;
+                
+                if (countBadge) {
+                    countBadge.innerText = 'x' + userInventory[card.id];
+                    countBadge.style.display = 'block';
+                }
+
+                let unlockedTypes = 0;
+                for (let key in userInventory) {
+                    if (userInventory[key] > 0) unlockedTypes++;
+                }
+                document.getElementById('unlockedCount').innerText = unlockedTypes;
+            }
+        }
+    </script>
+</body>
+</html>
