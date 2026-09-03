@@ -30,17 +30,23 @@
         #gameScreen { display: none; text-align: center; width: 100%; max-width: 500px; }
         
         .counter-box {
-            font-size: 0.9rem; color: #ff007f; margin-top: 5px;
-            background: rgba(255,255,255,0.05); padding: 5px 15px; border-radius: 20px; display: inline-block;
+            font-size: 0.85rem; color: #ff007f; margin-top: 5px;
+            background: rgba(255,255,255,0.05); padding: 5px 12px; border-radius: 20px; display: inline-block;
         }
 
-        /* ส่วนโซนบอส */
+        .pity-box {
+            font-size: 0.85rem; color: #ffd700; margin-top: 5px; margin-left: 5px;
+            background: rgba(255, 215, 0, 0.1); padding: 5px 12px; border-radius: 20px; display: inline-block;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+        }
+
+        /* โซนบอส */
         .boss-container {
             background: rgba(255, 0, 85, 0.1);
             border: 2px solid #ff0055;
             border-radius: 16px;
             padding: 15px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             box-shadow: 0 0 15px rgba(255, 0, 85, 0.3);
         }
         .boss-name { font-size: 1.3rem; font-weight: bold; color: #ff4757; text-shadow: 0 0 10px #ff4757; }
@@ -52,7 +58,7 @@
             height: 100%; width: 100%; background: linear-gradient(90deg, #ff0055, #ff4757);
             transition: width 0.3s ease;
         }
-        .battle-log { font-size: 0.85rem; color: #ffcc00; height: 20px; font-weight: bold; }
+        .battle-log { font-size: 0.85rem; color: #ffcc00; height: 22px; font-weight: bold; margin-top: 5px; }
 
         .card-container { perspective: 1000px; margin: 15px auto; width: 200px; height: 280px; }
         .card {
@@ -95,6 +101,7 @@
         .btn-attack {
             background: linear-gradient(45deg, #ff4757, #ff6b81);
             box-shadow: 0 0 15px rgba(255, 71, 87, 0.5);
+            width: 90%; margin-top: 10px;
         }
 
         .btn-toggle-album {
@@ -134,16 +141,19 @@
     </div>
 
     <div id="gameScreen">
+        <!-- โซนบอส (ปุ่มโจมตีย้ายมาอยู่นี่) -->
         <div class="boss-container">
-            <div class="boss-name" id="bossName">👹 Dio Over Heaven</div>
+            <div class="boss-name" id="bossName">⚡ Dio Over Heaven</div>
             <div class="hp-bar-bg">
                 <div class="hp-bar-fill" id="hpBar"></div>
             </div>
             <div style="font-size:0.85rem;" id="hpText">HP: 500,000 / 500,000</div>
             <div class="battle-log" id="battleLog">เตรียมตัวเข้าสู่การต่อสู้!</div>
+            <button type="button" class="btn-action btn-attack" onclick="attackBoss()">⚔️ โจมตีบอส!</button>
         </div>
 
         <div class="counter-box">สุ่มไปแล้ว: <span id="drawCount">0</span> ครั้ง</div>
+        <div class="pity-box">การันตี SSR: <span id="pityCount">0</span>/25</div>
 
         <div class="card-container" onclick="drawCard()">
             <div class="card" id="card">
@@ -157,7 +167,6 @@
         </div>
 
         <button type="button" class="btn-action btn-draw" onclick="drawCard()">🎲 สุ่มการ์ด</button>
-        <button type="button" class="btn-action btn-attack" onclick="attackBoss()">⚔️ โจมตีบอส!</button>
         <br>
         <button type="button" class="btn-toggle-album" onclick="toggleAlbum()">📦 คอลเลกชันการ์ด (<span id="unlockedCount">0</span>/12)</button>
 
@@ -201,10 +210,11 @@
 
         const allCards = [...pool.ur, ...pool.ssr, ...pool.sr, ...pool.r, ...pool.c];
         const userInventory = {};
-        let activeCard = null; // การ์ดที่ใช้อยู่ปัจจุบัน
+        let activeCard = null;
 
         let isAnimating = false;
         let totalDraws = 0;
+        let pityCounter = 0; // ตัวนับการันตี SSR (สะสมได้สูงสุด 25)
 
         function startGame() {
             var startBox = document.getElementById('startScreen');
@@ -255,7 +265,6 @@
             let boss = bosses[currentBossIndex];
             if (boss.hp <= 0) return;
 
-            // สุ่มพลังโจมตีคริติคอล
             let isCrit = Math.random() < 0.2;
             let damage = isCrit ? activeCard.atk * 2 : activeCard.atk;
 
@@ -263,9 +272,9 @@
             updateBossUI();
 
             if (isCrit) {
-                document.getElementById('battleLog').innerText = `💥 ติดคริติคอล! ${activeCard.name} โจมตีใส่ ${damage} ดาเมจ!`;
+                document.getElementById('battleLog').innerText = `💥 ติดคริติคอล! ${activeCard.name} โจมตีใส่ ${damage.toLocaleString()} ดาเมจ!`;
             } else {
-                document.getElementById('battleLog').innerText = `⚔️ ${activeCard.name} โจมตีใส่บอส ${damage} ดาเมจ!`;
+                document.getElementById('battleLog').innerText = `⚔️ ${activeCard.name} โจมตีใส่บอส ${damage.toLocaleString()} ดาเมจ!`;
             }
 
             if (boss.hp <= 0) {
@@ -298,6 +307,16 @@
         }
 
         function getRandomCard() {
+            pityCounter++;
+            
+            // เช็กการันตีเมื่อครบ 25 ครั้ง
+            if (pityCounter >= 25) {
+                pityCounter = 0;
+                document.getElementById('pityCount').innerText = pityCounter;
+                const randomItem = pool.ssr[Math.floor(Math.random() * pool.ssr.length)];
+                return { ...randomItem, rarity: "SSR (การันตี!)" };
+            }
+
             const chance = Math.random() * 100;
             let selectedRarity = "Common";
             let selectedList = pool.c;
@@ -305,9 +324,11 @@
             if (chance < 0.1) {
                 selectedRarity = "UR";
                 selectedList = pool.ur;
+                pityCounter = 0; // รีเซ็ตตัวนับถ้าได้ UR
             } else if (chance < 4.8) {
                 selectedRarity = "SSR";
                 selectedList = pool.ssr;
+                pityCounter = 0; // รีเซ็ตตัวนับถ้าได้ SSR
             } else if (chance < 29.8) {
                 selectedRarity = "SR";
                 selectedList = pool.sr;
@@ -318,6 +339,8 @@
                 selectedRarity = "Common";
                 selectedList = pool.c;
             }
+
+            document.getElementById('pityCount').innerText = pityCounter;
 
             const randomItem = selectedList[Math.floor(Math.random() * selectedList.length)];
             return {
@@ -340,7 +363,7 @@
 
             setTimeout(function() {
                 const random = getRandomCard();
-                activeCard = random; // ตั้งการ์ดล่าสุดเป็นหลักสำหรับสู้ทันที
+                activeCard = random;
                 
                 cardFront.className = "card-face card-front " + random.class;
                 document.getElementById('cardRarity').innerText = random.rarity;
@@ -361,7 +384,7 @@
             
             if (item) {
                 item.classList.add('unlocked');
-                document.getElementById('rarity-' + card.id).innerText = card.rarity;
+                document.getElementById('rarity-' + card.id).innerText = card.class.toUpperCase();
                 document.getElementById('name-' + card.id).innerText = card.name;
                 
                 if (countBadge) {
