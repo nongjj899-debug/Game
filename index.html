@@ -13,14 +13,34 @@
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             overflow: hidden;
         }
-        h1 {
-            font-size: 2rem; margin-bottom: 20px;
-            text-shadow: 0 0 10px #ff007f, 0 0 20px #ff007f;
+
+        /* หน้ากดเข้าเกม */
+        #startScreen {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            text-align: center; width: 100%; height: 100vh;
+        }
+        .game-title {
+            font-size: 2.5rem; margin-bottom: 10px; color: #ff007f;
+            text-shadow: 0 0 15px #ff007f, 0 0 30px #ff007f;
             letter-spacing: 2px;
         }
+        .subtitle { font-size: 1rem; color: #aaa; margin-bottom: 40px; }
+        .btn-start {
+            padding: 16px 45px; font-size: 1.4rem; font-weight: bold; color: #fff;
+            background: linear-gradient(45deg, #00d2ff, #0072ff);
+            border: none; border-radius: 50px; cursor: pointer;
+            box-shadow: 0 0 20px rgba(0, 210, 255, 0.5);
+            animation: pulse 1.5s infinite alternate;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 15px rgba(0,210,255,0.4); }
+            100% { transform: scale(1.08); box-shadow: 0 0 30px rgba(0,210,255,0.8); }
+        }
+
+        /* หน้าเล่นเกมสุ่มการ์ด (ซ่อนไว้ก่อน) */
+        #gameScreen { display: none; flex-direction: column; align-items: center; justify-content: center; }
         
-        /* เอฟเฟกต์การ์ดพลิก 3D */
-        .card-container { perspective: 1000px; margin-bottom: 30px; }
+        .card-container { perspective: 1000px; margin: 25px 0; }
         .card {
             width: 220px; height: 320px; border-radius: 16px;
             position: relative; transform-style: preserve-3d;
@@ -35,14 +55,9 @@
             border: 3px solid rgba(255,255,255,0.2); padding: 20px;
         }
         
-        /* ด้านหลังการ์ด */
-        .card-back {
-            background: linear-gradient(135deg, #2c3e50, #000000);
-            border-color: #00d2ff;
-        }
+        .card-back { background: linear-gradient(135deg, #2c3e50, #000000); border-color: #00d2ff; }
         .card-back::after { content: "❖"; font-size: 60px; color: #00d2ff; text-shadow: 0 0 15px #00d2ff; }
 
-        /* ด้านหน้าการ์ด */
         .card-front { transform: rotateY(180deg); background: #151515; text-align: center; }
         .rarity { font-size: 0.9rem; font-weight: bold; margin-bottom: 15px; text-transform: uppercase; }
         .card-title { font-size: 1.4rem; font-weight: bold; }
@@ -54,32 +69,40 @@
         .r { border-color: #3b82f6; box-shadow: 0 0 10px #3b82f6; color: #3b82f6; }
         .c { border-color: #9ca3af; color: #9ca3af; }
 
-        /* ปุ่มกด */
-        button {
+        .btn-draw {
             padding: 14px 36px; font-size: 1.2rem; font-weight: bold; color: #fff;
             background: linear-gradient(45deg, #ff007f, #7928ca);
             border: none; border-radius: 50px; cursor: pointer;
             box-shadow: 0 0 15px rgba(255, 0, 127, 0.4);
-            transition: all 0.2s ease; outline: none;
         }
-        button:active { transform: scale(0.95); }
+        .btn-draw:active { transform: scale(0.95); }
     </style>
 </head>
 <body>
 
-    <h1>✨ GACHA CARD ✨</h1>
-
-    <div class="card-container" onclick="drawCard()">
-        <div class="card" id="card">
-            <div class="card-face card-back"></div>
-            <div class="card-face card-front" id="cardFront">
-                <div class="rarity" id="cardRarity">SSR</div>
-                <div class="card-title" id="cardName">มังกรทอง</div>
-            </div>
-        </div>
+    <!-- หน้าแรกสำหรับกดเข้าเกม -->
+    <div id="startScreen">
+        <h1 class="game-title">GACHA WORLD</h1>
+        <p class="subtitle">ตำนานการ์ดเวทมนตร์</p>
+        <button class="btn-start" onclick="startGame()">▶ กดเพื่อเข้าสู่เกม</button>
     </div>
 
-    <button onclick="drawCard()">สุ่มการ์ด!</button>
+    <!-- หน้าสุ่มการ์ด -->
+    <div id="gameScreen">
+        <h1 style="font-size: 1.5rem; color: #ff007f; text-shadow: 0 0 10px #ff007f;">✨ สุ่มการ์ด ✨</h1>
+
+        <div class="card-container" onclick="drawCard()">
+            <div class="card" id="card">
+                <div class="card-face card-back"></div>
+                <div class="card-face card-front" id="cardFront">
+                    <div class="rarity" id="cardRarity">SSR</div>
+                    <div class="card-title" id="cardName">มังกรทอง</div>
+                </div>
+            </div>
+        </div>
+
+        <button class="btn-draw" onclick="drawCard()">สุ่มการ์ด!</button>
+    </div>
 
     <script>
         const cardList = [
@@ -92,6 +115,13 @@
 
         let isAnimating = false;
 
+        // ฟังก์ชันสลับหน้ากดเข้าเกม
+        function startGame() {
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('gameScreen').style.display = 'flex';
+        
+
+        // ฟังก์ชันสุ่มการ์ด
         function drawCard() {
             if (isAnimating) return;
             isAnimating = true;
@@ -99,19 +129,15 @@
             const card = document.getElementById('card');
             const cardFront = document.getElementById('cardFront');
             
-            // พลิกกลับไปด้านหลังก่อน
             card.classList.remove('flipped');
 
             setTimeout(() => {
-                // สุ่มการ์ดใหม่
                 const random = cardList[Math.floor(Math.random() * cardList.length)];
                 
-                // ลบ class ความแรร์เก่าออกแล้วใส่ใหม่
                 cardFront.className = "card-face card-front " + random.class;
                 document.getElementById('cardRarity').innerText = random.rarity;
                 document.getElementById('cardName').innerText = random.name;
 
-                // พลิกการ์ดโชว์หน้าใหม่
                 card.classList.add('flipped');
                 isAnimating = false;
             }, 300);
