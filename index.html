@@ -10,10 +10,11 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: radial-gradient(circle, #1a1c29 0%, #08090d 100%);
             color: #fff; min-height: 100vh;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+            padding: 20px 10px;
         }
 
-        #startScreen { text-align: center; width: 100%; padding: 20px; }
+        #startScreen { text-align: center; width: 100%; margin-top: 30vh; }
         .game-title {
             font-size: 2rem; margin-bottom: 10px; color: #ff007f;
             text-shadow: 0 0 15px #ff007f, 0 0 30px #ff007f;
@@ -26,14 +27,14 @@
             box-shadow: 0 0 20px rgba(0, 210, 255, 0.5);
         }
 
-        #gameScreen { display: none; text-align: center; }
+        #gameScreen { display: none; text-align: center; width: 100%; max-width: 500px; }
         
         .counter-box {
             font-size: 0.9rem; color: #ff007f; margin-top: 5px;
             background: rgba(255,255,255,0.05); padding: 5px 15px; border-radius: 20px; display: inline-block;
         }
 
-        .card-container { perspective: 1000px; margin: 20px auto; width: 230px; height: 330px; }
+        .card-container { perspective: 1000px; margin: 20px auto; width: 220px; height: 310px; }
         .card {
             width: 100%; height: 100%; border-radius: 16px;
             position: relative; transform-style: preserve-3d;
@@ -53,7 +54,7 @@
 
         .card-front { transform: rotateY(180deg); background: #151515; text-align: center; }
         .rarity { font-size: 1rem; font-weight: bold; margin-bottom: 10px; text-transform: uppercase; }
-        .card-title { font-size: 1.3rem; font-weight: bold; margin-bottom: 5px; }
+        .card-title { font-size: 1.2rem; font-weight: bold; margin-bottom: 5px; }
         .anime-tag { font-size: 0.8rem; opacity: 0.8; }
 
         /* ปรับสีความแรร์: UR สีแดงเลือด / SSR สีเหลืองทอง */
@@ -67,132 +68,24 @@
             padding: 14px 36px; font-size: 1.2rem; font-weight: bold; color: #fff;
             background: linear-gradient(45deg, #ff007f, #7928ca);
             border: none; border-radius: 50px; cursor: pointer;
-            box-shadow: 0 0 15px rgba(255, 0, 127, 0.4); margin-top: 10px;
-        }
-    </style>
-</head>
-<body>
-
-    <div id="startScreen">
-        <h1 class="game-title">JOJO x DEMON SLAYER</h1>
-        <p class="subtitle">สุ่มการ์ดตัวละครข้ามจักรวาล</p>
-        <button type="button" class="btn-start" onclick="startGame()">▶ กดเพื่อเข้าสู่เกม</button>
-    </div>
-
-    <div id="gameScreen">
-        <h1 style="font-size: 1.5rem; color: #ff007f;">✨ สุ่มการ์ดตัวละคร ✨</h1>
-        <div class="counter-box">สุ่มไปแล้ว: <span id="drawCount">0</span> ครั้ง</div>
-
-        <div class="card-container" onclick="drawCard()">
-            <div class="card" id="card">
-                <div class="card-face card-back"></div>
-                <div class="card-face card-front" id="cardFront">
-                    <div class="rarity" id="cardRarity">UR</div>
-                    <div class="card-title" id="cardName">ดีโอ (DIO)</div>
-                    <div class="anime-tag" id="cardAnime">JoJo's Bizarre Adventure</div>
-                </div>
-            </div>
-        </div>
-
-        <button type="button" class="btn-draw" onclick="drawCard()">สุ่มการ์ด!</button>
-    </div>
-
-    <script>
-        const pool = {
-            ur: [
-                { name: "ดีโอ แบรนโด (DIO)", anime: "JoJo Part 3", class: "ur" },
-                { name: "คิบุตสึจิ มุซัน", anime: "Demon Slayer", class: "ur" }
-            ],
-            ssr: [
-                { name: "คูโจ โจทาโร่", anime: "JoJo Part 3", class: "ssr" },
-                { name: "คามาโดะ ทันจิโร่", anime: "Demon Slayer", class: "ssr" },
-                { name: "เร็นโกคุ เคียวจูโร่", anime: "Demon Slayer", class: "ssr" },
-                { name: "โจรูโน่ โจบาน่า", anime: "JoJo Part 5", class: "ssr" }
-            ],
-            sr: [
-                { name: "อากาสึมะ เซ็นอิทซึ", anime: "Demon Slayer", class: "sr" },
-                { name: "ฮาชิบิระ อิโนะสึเกะ", anime: "Demon Slayer", class: "sr" },
-                { name: "คิชิเบะ โรฮัง", anime: "JoJo Part 4", class: "sr" }
-            ],
-            r: [
-                { name: "คามาโดะ เนซึโกะ", anime: "Demon Slayer", class: "r" },
-                { name: "สปีดวากอน", anime: "JoJo Part 1", class: "r" }
-            ],
-            c: [
-                { name: "อสูรวัด (Temple Demon)", anime: "Demon Slayer", class: "c" }
-            ]
-        };
-
-        let isAnimating = false;
-        let totalDraws = 0;
-
-        function startGame() {
-            var startBox = document.getElementById('startScreen');
-            var gameBox = document.getElementById('gameScreen');
-            if (startBox && gameBox) {
-                startBox.style.display = 'none';
-                gameBox.style.display = 'block';
-            }
+            box-shadow: 0 0 15px rgba(255, 0, 127, 0.4); margin: 10px 5px;
         }
 
-        function getRandomCard() {
-            const chance = Math.random() * 100;
-            let selectedRarity = "Common";
-            let selectedList = pool.c;
-
-            if (chance < 0.1) {
-                // UR 0.1%
-                selectedRarity = "UR";
-                selectedList = pool.ur;
-            } else if (chance < 4.8) {
-                // SSR 4.7%
-                selectedRarity = "SSR";
-                selectedList = pool.ssr;
-            } else if (chance < 29.8) {
-                // SR 25%
-                selectedRarity = "SR";
-                selectedList = pool.sr;
-            } else if (chance < 65.0) {
-                // R 35.2%
-                selectedRarity = "R";
-                selectedList = pool.r;
-            } else {
-                // Common 35%
-                selectedRarity = "Common";
-                selectedList = pool.c;
-            }
-
-            const randomItem = selectedList[Math.floor(Math.random() * selectedList.length)];
-            return {
-                ...randomItem,
-                rarity: selectedRarity
-            };
+        .btn-toggle-album {
+            padding: 10px 20px; font-size: 0.9rem; font-weight: bold; color: #00d2ff;
+            background: rgba(0, 210, 255, 0.1); border: 1px solid #00d2ff;
+            border-radius: 20px; cursor: pointer; margin-top: 15px;
         }
 
-        function drawCard() {
-            if (isAnimating) return;
-            isAnimating = true;
-
-            totalDraws++;
-            document.getElementById('drawCount').innerText = totalDraws;
-
-            const card = document.getElementById('card');
-            const cardFront = document.getElementById('cardFront');
+        /* สมุดสะสมการ์ด */
+        #albumSection {
+            margin-top: 20px; width: 100%;
+            background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px; padding: 15px;
+        }
+        .album-grid {
+            display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 10px;
+        }
+        .album-item {
+            background: #111; border: 2px solid #333; border-radius: 10px;
             
-            card.classList.remove('flipped');
-
-            setTimeout(() => {
-                const random = getRandomCard();
-                
-                cardFront.className = "card-face card-front " + random.class;
-                document.getElementById('cardRarity').innerText = random.rarity;
-                document.getElementById('cardName').innerText = random.name;
-                document.getElementById('cardAnime').innerText = random.anime;
-
-                card.classList.add('flipped');
-                isAnimating = false;
-            }, 300);
-        }
-    </script>
-</body>
-</html>
